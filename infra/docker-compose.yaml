@@ -1,0 +1,32 @@
+version: "3.3"
+services:
+  redis:
+    image: redis:7.2.3
+    ports:
+      - "6379:6379"
+    env_file:
+      - ./.env-auth
+    volumes:
+      - $HOME/cache-auth_service:/data
+
+  db:
+    image: postgres:16.1
+    volumes:
+      - $HOME/postgres_compose/:/var/lib/postgresql/data/
+    ports:
+      - 5432:5432
+    env_file:
+      - ./.env-auth
+
+
+  rabbit_mq:
+    image: rabbitmq:3.12-management
+    container_name: rabbit_mq
+    labels:
+      logging: "promtail"
+      logging_jobname: "containerlogs"
+    ports:
+      - '5672:5672'
+      - '15672:15672'
+    volumes:
+      - ./rabbitmq_data:/usr/share/rabbitmq/data
