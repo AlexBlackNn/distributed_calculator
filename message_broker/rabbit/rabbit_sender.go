@@ -103,6 +103,44 @@ func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Messag
 	return nil
 }
 
+func (mb *MessageBroker) Receive() error {
+
+	messageChannel, err := mb.channel.Consume(
+		mb.queue.Name,
+		"",
+		false,
+		false,
+		false,
+		false,
+		nil,
+	)
+
+	if err != nil {
+		return fmt.Errorf(
+			"BROKER LAYER: broker.rabbit.Receive: couldn't get messageChannel: %w",
+			err,
+		)
+	}
+
+	var forever chan struct{}
+
+	go func() {
+		for msg := range messageChannel {
+			message := message_broker.Message{}
+			err := json.Unmarshal(msg.Body, &message)
+			fmt.Println(message)
+			if err != nil {
+				fmt.Println(err)
+			}
+			msg.Ack(false)
+		}
+	}()
+
+	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	<-forever
+	return nil
+}
+
 func main() {
 	ctx := context.Background()
 	rabbitMqSender, err := New("test")
@@ -116,14 +154,13 @@ func main() {
 		MultiplicationOperationExecutionTime: 300,
 		Division_operation_execution_time:    400,
 	}
-
 	message := message_broker.Message{
 		MessageExectutionTime: execTime,
 		Operation:             "9*8+(7-8)",
 	}
-
 	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {
 		fmt.Println(err)
 	}
+	rabbitMqSender.Receive()
 }

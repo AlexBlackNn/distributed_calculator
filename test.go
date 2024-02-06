@@ -8,8 +8,9 @@ import (
 )
 
 func main() {
-	expression1 := "1+2*(3+4)"
-	expression2 := "(5/2)+3*9-10"
+	expression1 := "1 + 2 * (3 + 4)"
+	expression2 := "(5 / 21) + (3 + 4) * (9 - 10)"
+	expression3 := "4 * (5 / 21) + (3 + 4) * (9 - 10)"
 
 	result1, err := evaluateExpression(expression1)
 	if err != nil {
@@ -24,17 +25,25 @@ func main() {
 	} else {
 		fmt.Println("Result of", expression2, "is", result2)
 	}
+
+	result3, err := evaluateExpression(expression3)
+	if err != nil {
+		fmt.Println("Error:", err)
+	} else {
+		fmt.Println("Result of", expression3, "is", result3)
+	}
 }
 
 func evaluateExpression(expression string) (float64, error) {
 	postfixExpression, err := infixToPostfix(expression)
+	fmt.Println("postfixExpression", postfixExpression)
 	if err != nil {
 		return 0, err
 	}
 
 	stack := []float64{}
 	tokens := strings.Fields(postfixExpression)
-
+	fmt.Println("tokens", tokens)
 	for _, token := range tokens {
 		if isNumber(token) {
 			number, _ := strconv.ParseFloat(token, 64)
@@ -77,7 +86,7 @@ func infixToPostfix(expression string) (string, error) {
 			continue
 		}
 		if unicode.IsDigit(char) {
-			output += string(char)
+			output += string(char) // добавляем цифру к выходной строке
 		} else if char == '(' {
 			operators = append(operators, char)
 		} else if char == ')' {
@@ -85,14 +94,14 @@ func infixToPostfix(expression string) (string, error) {
 				output += " " + string(operators[len(operators)-1])
 				operators = operators[:len(operators)-1]
 			}
-			// Remove the '(' from the stack
-			operators = operators[:len(operators)-1]
+			operators = operators[:len(operators)-1] // удаляем '(' из стека
 		} else if char == '+' || char == '-' || char == '*' || char == '/' {
 			for len(operators) > 0 && precedence(operators[len(operators)-1]) >= precedence(char) {
 				output += " " + string(operators[len(operators)-1])
 				operators = operators[:len(operators)-1]
 			}
 			operators = append(operators, char)
+			output += " " // добавляем пробел после оператора
 		} else {
 			return "", fmt.Errorf("Invalid character in expression")
 		}
