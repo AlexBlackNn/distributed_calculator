@@ -7,8 +7,12 @@ import (
 )
 
 type Stack struct {
+	data []string
+}
+
+type Calculator struct {
 	postfix string
-	data    []string
+	Stack
 }
 
 // IsEmpty: check if stack is empty
@@ -54,8 +58,7 @@ func prec(s string) int {
 	}
 }
 
-func (st *Stack) infixToPostfix(infix string) string {
-	var postfix string
+func (st *Calculator) infixToPostfix(infix string) {
 	var operand string
 	for _, char := range infix {
 		opchar := string(char)
@@ -64,20 +67,20 @@ func (st *Stack) infixToPostfix(infix string) string {
 			operand += opchar
 		} else {
 			if operand != "" {
-				postfix += operand + " "
+				st.postfix += operand + " "
 				operand = "" // reset operand
 			}
 			if char == '(' {
 				st.Push(opchar)
 			} else if char == ')' {
 				for st.Top() != "(" {
-					postfix += st.Top() + " "
+					st.postfix += st.Top() + " "
 					st.Pop()
 				}
 				st.Pop()
 			} else {
 				for !st.IsEmpty() && prec(opchar) <= prec(st.Top()) {
-					postfix += st.Top() + " "
+					st.postfix += st.Top() + " "
 					st.Pop()
 				}
 				st.Push(opchar)
@@ -85,19 +88,18 @@ func (st *Stack) infixToPostfix(infix string) string {
 		}
 	}
 	if operand != "" {
-		postfix += operand + " "
+		st.postfix += operand + " "
 	}
 	// Pop all the remaining elements from the stack
 	for !st.IsEmpty() {
-		postfix += st.Top() + " "
+		st.postfix += st.Top() + " "
 		st.Pop()
 	}
-	return postfix
 }
 
-func (st *Stack) evaluatePostfix(postfix string) int {
+func (st *Calculator) evaluatePostfix() int {
 	var fullNum string
-	for _, char := range postfix {
+	for _, char := range st.postfix {
 		str := string(char)
 		if unicode.IsDigit(char) {
 			fullNum += str
@@ -132,9 +134,10 @@ func (st *Stack) evaluatePostfix(postfix string) int {
 
 func main() {
 	stack := Stack{}
+	calculator := Calculator{"", stack}
+
 	infix := "(11-1)/2+1*(22+11)*2/2"
-	postfix := stack.infixToPostfix(infix)
-	fmt.Println(postfix)
-	result := stack.evaluatePostfix(postfix)
+	calculator.infixToPostfix(infix)
+	result := calculator.evaluatePostfix()
 	fmt.Println(result)
 }
