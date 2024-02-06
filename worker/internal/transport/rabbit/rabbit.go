@@ -1,13 +1,14 @@
-package main
+package rabbit
 
 import (
 	"context"
+	"distributed_calculator/message_broker"
 	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
-	"distributed_calculator/message_broker"
+	transport "distributed_calculator/worker/internal/transport"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -71,7 +72,7 @@ func (mb *MessageBroker) Stop() error {
 	return nil
 }
 
-func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Message) error {
+func (mb *MessageBroker) Send(ctx context.Context, message transport.Message) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -148,13 +149,13 @@ func main() {
 		fmt.Println(err)
 	}
 
-	execTime := message_broker.ExectutionTime{
+	execTime := transport.ExectutionTime{
 		PlusOperationExecutionTime:           100,
 		MinusOperationExecutionTime:          200,
 		MultiplicationOperationExecutionTime: 300,
 		Division_operation_execution_time:    400,
 	}
-	message := message_broker.Message{
+	message := transport.Message{
 		MessageExectutionTime: execTime,
 		Operation:             "9*8+(7-8)",
 	}

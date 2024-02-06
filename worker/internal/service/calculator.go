@@ -1,4 +1,4 @@
-package main
+package calculator
 
 import (
 	"fmt"
@@ -58,7 +58,7 @@ func prec(s string) int {
 	}
 }
 
-func (st *Calculator) infixToPostfix(infix string) {
+func (st *Calculator) InfixToPostfix(infix string) {
 	var operand string
 	for _, char := range infix {
 		opchar := string(char)
@@ -97,7 +97,7 @@ func (st *Calculator) infixToPostfix(infix string) {
 	}
 }
 
-func (st *Calculator) evaluatePostfix() int {
+func (st *Calculator) EvaluatePostfix() int {
 	var fullNum string
 	for _, char := range st.postfix {
 		str := string(char)
@@ -132,6 +132,11 @@ func (st *Calculator) evaluatePostfix() int {
 	return result
 }
 
+func (st *Calculator) Start(infix string) int {
+	st.InfixToPostfix(infix)
+	return st.EvaluatePostfix()
+}
+
 func New() *Calculator {
 	stack := Stack{}
 	return &Calculator{"", stack}
@@ -140,7 +145,6 @@ func New() *Calculator {
 func main() {
 	calculator := New()
 	infix := "(11-1)/2+1*(22+11)*2/2"
-	calculator.infixToPostfix(infix)
-	result := calculator.evaluatePostfix()
+	result := calculator.Start(infix)
 	fmt.Println(result)
 }
