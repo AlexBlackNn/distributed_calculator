@@ -2,10 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"time"
 
+	"distributed_calculator/message_broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -69,14 +71,19 @@ func (mb *MessageBroker) Stop() error {
 	return nil
 }
 
-// TODO: change data to struct
-func (mb *MessageBroker) Send(ctx context.Context, data string) error {
-
+func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Message) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
-	body := data
-	err := mb.channel.PublishWithContext(ctx,
+	body, err := json.Marshal(message)
+	if err != nil {
+		return fmt.Errorf(
+			"BROKER LAYER: broker.rabbit.New: couldn't convert message %v to bytes: %w",
+			message,
+			err,
+		)
+	}
+	err = mb.channel.PublishWithContext(ctx,
 		"",            // exchange
 		mb.queue.Name, // routing key
 		false,         // mandatory
@@ -84,7 +91,7 @@ func (mb *MessageBroker) Send(ctx context.Context, data string) error {
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
-			Body:         []byte(body),
+			Body:         body,
 		})
 	if err != nil {
 		return fmt.Errorf(
@@ -102,7 +109,20 @@ func main() {
 	if err != nil {
 		fmt.Println(err)
 	}
-	err = rabbitMqSender.Send(ctx, "9*8+(7-8)")
+
+	execTime := message_broker.ExectutionTime{
+		PlusOperationExecutionTime:           100,
+		MinusOperationExecutionTime:          200,
+		MultiplicationOperationExecutionTime: 300,
+		Division_operation_execution_time:    400,
+	}
+
+	message := message_broker.Message{
+		MessageExectutionTime: execTime,
+		Operation:             "9*8+(7-8)",
+	}
+
+	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {
 		fmt.Println(err)
 	}

@@ -1,9 +1,11 @@
 package main
 
 import (
-	"log"
-
+	"distributed_calculator/message_broker"
+	"encoding/json"
+	"fmt"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"log"
 )
 
 func failOnError(err error, msg string) {
@@ -53,7 +55,12 @@ func main() {
 
 	go func() {
 		for d := range msgs {
-			log.Printf("Received a message: %s", d.Body)
+			message := message_broker.Message{}
+			err := json.Unmarshal(d.Body, &message)
+			fmt.Println(message)
+			if err != nil {
+				fmt.Println(err)
+			}
 			d.Ack(false)
 		}
 	}()
