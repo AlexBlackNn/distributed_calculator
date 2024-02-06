@@ -6,16 +6,19 @@ import (
 	"unicode"
 )
 
-type Stack []string
+type Stack struct {
+	postfix string
+	data    []string
+}
 
 // IsEmpty: check if stack is empty
 func (st *Stack) IsEmpty() bool {
-	return len(*st) == 0
+	return len(st.data) == 0
 }
 
 // Push a new value onto the stack
 func (st *Stack) Push(str string) {
-	*st = append(*st, str) //Simply append the new value to the end of the stack
+	st.data = append(st.data, str) //Simply append the new value to the end of the stack
 }
 
 // Remove top element of stack. Return false if stack is empty.
@@ -23,8 +26,8 @@ func (st *Stack) Pop() bool {
 	if st.IsEmpty() {
 		return false
 	} else {
-		index := len(*st) - 1 // Get the index of top most element.
-		*st = (*st)[:index]   // Remove it from the stack by slicing it off.
+		index := len(st.data) - 1   // Get the index of top most element.
+		st.data = (st.data)[:index] // Remove it from the stack by slicing it off.
 		return true
 	}
 }
@@ -34,17 +37,15 @@ func (st *Stack) Top() string {
 	if st.IsEmpty() {
 		return ""
 	} else {
-		index := len(*st) - 1   // Get the index of top most element.
-		element := (*st)[index] // Index onto the slice and obtain the element.
+		index := len(st.data) - 1   // Get the index of top most element.
+		element := (st.data)[index] // Index onto the slice and obtain the element.
 		return element
 	}
 }
 
 // Function to return precedence of operators
 func prec(s string) int {
-	if s == "^" {
-		return 3
-	} else if (s == "/") || (s == "*") {
+	if (s == "/") || (s == "*") {
 		return 2
 	} else if (s == "+") || (s == "-") {
 		return 1
@@ -53,8 +54,7 @@ func prec(s string) int {
 	}
 }
 
-func infixToPostfix(infix string) string {
-	var sta Stack
+func (st *Stack) infixToPostfix(infix string) string {
 	var postfix string
 	var operand string
 	for _, char := range infix {
@@ -68,19 +68,19 @@ func infixToPostfix(infix string) string {
 				operand = "" // reset operand
 			}
 			if char == '(' {
-				sta.Push(opchar)
+				st.Push(opchar)
 			} else if char == ')' {
-				for sta.Top() != "(" {
-					postfix += sta.Top() + " "
-					sta.Pop()
+				for st.Top() != "(" {
+					postfix += st.Top() + " "
+					st.Pop()
 				}
-				sta.Pop()
+				st.Pop()
 			} else {
-				for !sta.IsEmpty() && prec(opchar) <= prec(sta.Top()) {
-					postfix += sta.Top() + " "
-					sta.Pop()
+				for !st.IsEmpty() && prec(opchar) <= prec(st.Top()) {
+					postfix += st.Top() + " "
+					st.Pop()
 				}
-				sta.Push(opchar)
+				st.Push(opchar)
 			}
 		}
 	}
@@ -88,32 +88,30 @@ func infixToPostfix(infix string) string {
 		postfix += operand + " "
 	}
 	// Pop all the remaining elements from the stack
-	for !sta.IsEmpty() {
-		postfix += sta.Top() + " "
-		sta.Pop()
+	for !st.IsEmpty() {
+		postfix += st.Top() + " "
+		st.Pop()
 	}
 	return postfix
 }
 
-func evaluatePostfix(postfix string) int {
-	sta := Stack{}
+func (st *Stack) evaluatePostfix(postfix string) int {
 	var fullNum string
 	for _, char := range postfix {
-
 		str := string(char)
 		if unicode.IsDigit(char) {
 			fullNum += str
 			continue
 		} else if string(char) == " " {
 			if fullNum != "" {
-				sta.Push(fullNum)
+				st.Push(fullNum)
 				fullNum = ""
 			}
 		} else if str == "+" || str == "-" || str == "*" || str == "/" {
-			op2, _ := strconv.Atoi(sta.Top())
-			sta.Pop()
-			op1, _ := strconv.Atoi(sta.Top())
-			sta.Pop()
+			op2, _ := strconv.Atoi(st.Top())
+			st.Pop()
+			op1, _ := strconv.Atoi(st.Top())
+			st.Pop()
 			var res int
 			switch str {
 			case "+":
@@ -125,18 +123,18 @@ func evaluatePostfix(postfix string) int {
 			case "/":
 				res = op1 / op2
 			}
-			sta.Push(strconv.Itoa(res))
+			st.Push(strconv.Itoa(res))
 		}
 	}
-	result, _ := strconv.Atoi(sta.Top())
+	result, _ := strconv.Atoi(st.Top())
 	return result
 }
 
 func main() {
-	infix := "(11-1)/2+(22+11)*2/2"
-	postfix := infixToPostfix(infix)
+	stack := Stack{}
+	infix := "(11-1)/2+1*(22+11)*2/2"
+	postfix := stack.infixToPostfix(infix)
 	fmt.Println(postfix)
-
-	result := evaluatePostfix(postfix)
+	result := stack.evaluatePostfix(postfix)
 	fmt.Println(result)
 }
