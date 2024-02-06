@@ -4,14 +4,13 @@ import (
 	"context"
 	"distributed_calculator/worker/internal/config"
 	service "distributed_calculator/worker/internal/service"
-	transport "distributed_calculator/worker/internal/transport"
 	"distributed_calculator/worker/internal/transport/rabbit"
 	"log/slog"
 )
 
 type MessageBrokerInterface interface {
-	Send(ctx context.Context, message transport.Message) error
-	Receive() error
+	Send(ctx context.Context, message any, string2 string) error
+	Receive(string) error
 	Stop() error
 }
 

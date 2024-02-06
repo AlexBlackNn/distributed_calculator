@@ -10,14 +10,14 @@ import (
 	"log/slog"
 	"time"
 
-	transport "distributed_calculator/worker/internal/transport"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
 type MessageBroker struct {
 	connection        *amqp.Connection
 	channel           *amqp.Channel
-	queue             amqp.Queue
+	operationQueue    amqp.Queue
+	resultQueue       amqp.Queue
 	logger            *slog.Logger
 	calculatorService ServiceInterface
 }
@@ -47,7 +47,7 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 		false, // global
 	)
 
-	queue, err := channel.QueueDeclare(
+	operationQueue, err := channel.QueueDeclare(
 		"operation", // name
 		true,        // durable
 		false,       // delete when unused
@@ -55,6 +55,16 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 		false,       // no-wait
 		nil,         // arguments
 	)
+
+	resultQueue, err := channel.QueueDeclare(
+		"result", // name
+		true,     // durable
+		false,    // delete when unused
+		false,    // exclusive
+		false,    // no-wait
+		nil,      // arguments
+	)
+
 	if err != nil {
 		return nil, fmt.Errorf(
 			"BROKER LAYER: broker.rabbit.New: couldn't create queue: %w",
@@ -64,7 +74,8 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 	return &MessageBroker{
 		connection:        connection,
 		channel:           channel,
-		queue:             queue,
+		operationQueue:    operationQueue,
+		resultQueue:       resultQueue,
 		logger:            log,
 		calculatorService: calculatorService,
 	}, nil
@@ -82,7 +93,7 @@ func (mb *MessageBroker) Stop() error {
 	return nil
 }
 
-func (mb *MessageBroker) Send(ctx context.Context, message transport.Message) error {
+func (mb *MessageBroker) Send(ctx context.Context, message any, queueName string) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -95,10 +106,10 @@ func (mb *MessageBroker) Send(ctx context.Context, message transport.Message) er
 		)
 	}
 	err = mb.channel.PublishWithContext(ctx,
-		"",            // exchange
-		mb.queue.Name, // routing key
-		false,         // mandatory
-		false,         // immediate
+		"",        // exchange
+		queueName, // routing key
+		false,     // mandatory
+		false,     // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
@@ -114,10 +125,10 @@ func (mb *MessageBroker) Send(ctx context.Context, message transport.Message) er
 	return nil
 }
 
-func (mb *MessageBroker) Receive() error {
+func (mb *MessageBroker) Receive(queueName string) error {
 
 	messageChannel, err := mb.channel.Consume(
-		mb.queue.Name,
+		queueName,
 		"",
 		false,
 		false,
@@ -137,13 +148,17 @@ func (mb *MessageBroker) Receive() error {
 
 	go func() {
 		for msg := range messageChannel {
+			ctx := context.Background()
 			message := message_broker.Message{}
 			err := json.Unmarshal(msg.Body, &message)
 			fmt.Println(message)
 			if err != nil {
 				fmt.Println(err)
 			}
+			// TODO send result back using one more channel
+			result := mb.calculatorService.Start(message.Operation)
 			fmt.Println("=====>>>", mb.calculatorService.Start(message.Operation))
+			mb.Send(ctx, result, "result")
 			msg.Ack(false)
 		}
 	}()
