@@ -132,10 +132,13 @@ func (st *Calculator) evaluatePostfix() int {
 	return result
 }
 
-func main() {
+func New() *Calculator {
 	stack := Stack{}
-	calculator := Calculator{"", stack}
+	return &Calculator{"", stack}
+}
 
+func main() {
+	calculator := New()
 	infix := "(11-1)/2+1*(22+11)*2/2"
 	calculator.infixToPostfix(infix)
 	result := calculator.evaluatePostfix()
