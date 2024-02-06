@@ -3,9 +3,11 @@ package rabbit
 import (
 	"context"
 	"distributed_calculator/message_broker"
+	"distributed_calculator/worker/internal/config"
 	"encoding/json"
 	"fmt"
 	"log"
+	"log/slog"
 	"time"
 
 	transport "distributed_calculator/worker/internal/transport"
@@ -13,12 +15,18 @@ import (
 )
 
 type MessageBroker struct {
-	connection *amqp.Connection
-	channel    *amqp.Channel
-	queue      amqp.Queue
+	connection        *amqp.Connection
+	channel           *amqp.Channel
+	queue             amqp.Queue
+	logger            *slog.Logger
+	calculatorService ServiceInterface
 }
 
-func New(brokerPath string) (*MessageBroker, error) {
+type ServiceInterface interface {
+	Start(infix string) int
+}
+
+func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterface) (*MessageBroker, error) {
 	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
 	if err != nil {
 		return nil, fmt.Errorf(
@@ -54,9 +62,11 @@ func New(brokerPath string) (*MessageBroker, error) {
 		)
 	}
 	return &MessageBroker{
-		connection: connection,
-		channel:    channel,
-		queue:      queue,
+		connection:        connection,
+		channel:           channel,
+		queue:             queue,
+		logger:            log,
+		calculatorService: calculatorService,
 	}, nil
 }
 
@@ -133,6 +143,7 @@ func (mb *MessageBroker) Receive() error {
 			if err != nil {
 				fmt.Println(err)
 			}
+			fmt.Println("=====>>>", mb.calculatorService.Start(message.Operation))
 			msg.Ack(false)
 		}
 	}()
@@ -140,28 +151,4 @@ func (mb *MessageBroker) Receive() error {
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 	return nil
-}
-
-func main() {
-	ctx := context.Background()
-	rabbitMqSender, err := New("test")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	execTime := transport.ExectutionTime{
-		PlusOperationExecutionTime:           100,
-		MinusOperationExecutionTime:          200,
-		MultiplicationOperationExecutionTime: 300,
-		Division_operation_execution_time:    400,
-	}
-	message := transport.Message{
-		MessageExectutionTime: execTime,
-		Operation:             "9*8+(7-8)",
-	}
-	err = rabbitMqSender.Send(ctx, message)
-	if err != nil {
-		fmt.Println(err)
-	}
-	rabbitMqSender.Receive()
 }

@@ -156,11 +156,11 @@ func main() {
 	}
 	message := message_broker.Message{
 		MessageExectutionTime: execTime,
-		Operation:             "9*8+(7-8)",
+		Operation:             "9*8+(7-8)*2-2",
 	}
 	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {
 		fmt.Println(err)
 	}
-	rabbitMqSender.Receive()
+	//rabbitMqSender.Receive()
 }
