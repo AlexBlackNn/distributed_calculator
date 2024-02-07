@@ -106,7 +106,7 @@ func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Reques
 func (mb *MessageBroker) Receive() error {
 
 	messageChannel, err := mb.channel.Consume(
-		mb.queue.Name,
+		"result",
 		"",
 		false,
 		false,
@@ -126,7 +126,7 @@ func (mb *MessageBroker) Receive() error {
 
 	go func() {
 		for msg := range messageChannel {
-			message := message_broker.RequestMessage{}
+			message := message_broker.ResponseMessage{}
 			err := json.Unmarshal(msg.Body, &message)
 			fmt.Println(message)
 			if err != nil {

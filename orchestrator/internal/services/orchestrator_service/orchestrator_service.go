@@ -93,3 +93,9 @@ func (os *OrchestratorService) CalculationRequest(
 	os.operationStorage.SaveOperation(ctx, operationModel, nil)
 	return userId, nil
 }
+
+func (os *OrchestratorService) ParseResponse(
+	ctx context.Context,
+) {
+	os.messageBroker.Receive()
+}
