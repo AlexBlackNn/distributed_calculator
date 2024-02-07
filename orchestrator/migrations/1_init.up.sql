@@ -9,8 +9,10 @@ CREATE TABLE IF NOT EXISTS settings
 
 CREATE TABLE IF NOT EXISTS operations
 (
-    id serial PRIMARY KEY,
-    operation varchar(200) UNIQUE
+    uid uuid PRIMARY KEY,
+    operation varchar(200) UNIQUE,
+    creation_at timestamp DEFAULT CURRENT_TIMESTAMP,
+    calculated_at timestamp
 );
 
 

@@ -1,15 +1,14 @@
-package main
+package rabbit
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/google/uuid"
 	"log"
 	"time"
 
-	"distributed_calculator/orchestrator/message_broker"
 	amqp "github.com/rabbitmq/amqp091-go"
+	"orchestrator/message_broker"
 )
 
 type MessageBroker struct {
@@ -140,29 +139,4 @@ func (mb *MessageBroker) Receive() error {
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
 	<-forever
 	return nil
-}
-
-func main() {
-	ctx := context.Background()
-	rabbitMqSender, err := New("test")
-	if err != nil {
-		fmt.Println(err)
-	}
-
-	execTime := message_broker.ExectutionTime{
-		PlusOperationExecutionTime:           1000,
-		MinusOperationExecutionTime:          2000,
-		MultiplicationOperationExecutionTime: 1200,
-		DivisionOperationExecutionTime:       2500,
-	}
-	message := message_broker.RequestMessage{
-		Id:                    uuid.New().String(),
-		MessageExectutionTime: execTime,
-		Operation:             "1*2",
-	}
-	err = rabbitMqSender.Send(ctx, message)
-	if err != nil {
-		fmt.Println(err)
-	}
-	//rabbitMqSender.Receive()
 }

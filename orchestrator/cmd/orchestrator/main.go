@@ -1,13 +1,11 @@
 package main
 
 import (
-	"context"
 	"log/slog"
+	"orchestrator/internal/app"
+	"orchestrator/internal/config"
 	"os"
 	"os/signal"
-	"sso/internal/app"
-	"sso/internal/config"
-	"sso/tracing"
 	"syscall"
 )
 
@@ -20,22 +18,10 @@ func main() {
 	// init app
 	application := app.New(log, cfg)
 
-	tp, err := tracing.Init("sso service", cfg)
-	if err != nil {
-		log.Error("init tracing error", err.Error())
-	}
-	defer func() {
-		if err = tp.Shutdown(context.Background()); err != nil {
-			log.Error("Error shutting down tracer provider", err.Error())
-		}
-	}()
-	// start grpc_transport server
-	go application.GRPCSrv.MustRun()
 	// graceful stop
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	signalType := <-stop
-	application.GRPCSrv.Stop()
 	log.Info(
 		"application stopped",
 		slog.String("signalType",

@@ -1,5 +1,5 @@
-// Package auth_service SERVICE layer interface
-package auth_service
+// Package orchestrator_service SERVICE layer interface
+package orchestrator_service
 
 import (
 	"context"

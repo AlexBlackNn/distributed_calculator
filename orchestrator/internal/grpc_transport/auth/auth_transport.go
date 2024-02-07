@@ -1,7 +1,7 @@
 package auth
 
 //TRANSPORT LAYER
-// serverAPI(transport layer) encapsulates auth_service(service layer)
+// serverAPI(transport layer) encapsulates orchestrator_service(orchestrator_service layer)
 
 import (
 	"context"
@@ -13,22 +13,22 @@ import (
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/status"
+	ssov1 "orchestrator/protos/gen/go/orchestrator"
 	"sso/internal/services/auth_service"
-	ssov1 "sso/protos/gen/go/sso"
 	"sso/storage"
 )
 
 // serverAPI TRANSPORT layer
 type serverAPI struct {
-	// provides ability to work even without service interface realisation
+	// provides ability to work even without orchestrator_service interface realisation
 	ssov1.UnimplementedAuthServer
-	// service layer
+	// orchestrator_service layer
 	auth   auth_service.AuthorizationInterface
 	tracer trace.Tracer
 }
 
 func Register(gRPC *grpc.Server, auth auth_service.AuthorizationInterface) {
-	ssov1.RegisterAuthServer(gRPC, &serverAPI{auth: auth, tracer: otel.Tracer("sso service")})
+	ssov1.RegisterAuthServer(gRPC, &serverAPI{auth: auth, tracer: otel.Tracer("orchestrator orchestrator_service")})
 }
 
 const (
@@ -134,7 +134,7 @@ func (s *serverAPI) Register(
 	if err := validateRegister(req); err != nil {
 		return nil, err
 	}
-	// call RegisterNewUser from service layer
+	// call RegisterNewUser from orchestrator_service layer
 	userID, err := s.auth.Register(
 		ctx, req.GetEmail(), req.GetPassword(),
 	)
@@ -159,7 +159,7 @@ func (s *serverAPI) IsAdmin(
 	if err := validateIsAdmin(req); err != nil {
 		return nil, err
 	}
-	// call IsAdmin from service layer
+	// call IsAdmin from orchestrator_service layer
 	IsAdmin, err := s.auth.IsAdmin(ctx, int(req.GetUserId()))
 	if err != nil {
 		// TODO: add error processing depends on the type of error

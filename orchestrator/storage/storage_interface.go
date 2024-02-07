@@ -2,24 +2,33 @@ package storage
 
 import (
 	"context"
-	"sso/internal/domain/models"
+	"orchestrator/internal/domain/models"
 	"time"
 )
 
-type UserStorage interface {
-	SaveUser(
+type OperationStorageInterface interface {
+	SaveOperation(
 		ctx context.Context,
-		email string,
-		passHash []byte,
-	) (context.Context, int64, error)
-	GetUser(
+		settings models.Operation,
+	) error
+	GetOperation(
 		ctx context.Context,
-		value any,
-	) (context.Context, models.User, error)
+		operation string,
+	) (models.Operation, error)
 }
 
-type TokenStorage interface {
-	SaveToken(ctx context.Context, token string, ttl time.Duration) (context.Context, error)
-	GetToken(ctx context.Context, token string) (context.Context, string, error)
-	CheckTokenExists(ctx context.Context, token string) (context.Context, int64, error)
+type SettingsStorageInterface interface {
+	SaveOperationExecutionTime(
+		ctx context.Context,
+		settings models.Settings,
+	) error
+	GetOperationExecutionTime(
+		ctx context.Context,
+		value any,
+	) (models.Settings, error)
+}
+
+type OperationCacheInterface interface {
+	SaveOperation(ctx context.Context, operation string, result float64, ttl time.Duration) error
+	GetOperation(ctx context.Context, operation string) (float64, error)
 }

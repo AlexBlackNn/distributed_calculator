@@ -4,7 +4,7 @@ storage_patroni:
   slave: "postgresql://postgres:postgres@haproxy:5001/postgres"
 access_token_ttl: 1h
 refresh_token_ttl: 240h # 10 days
-service_secret: "service very secret"
+service_secret: "orchestrator_service very secret"
 grpc:
   port: 44044
   timeout: 10h
