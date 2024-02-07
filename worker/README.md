@@ -26,8 +26,7 @@ docker-compose up
 
 3. Запускаем приложение локально
 ```bash
-go run worker/cmd/main.go --config=./worker/config/local.yaml
-
+ go run cmd/main.go --config=./config/local.yaml
 ```
 
 ## Окружение развёртывания программного обеспечения - ДЕМО

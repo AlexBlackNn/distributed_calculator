@@ -2,12 +2,12 @@ package rabbit
 
 import (
 	"context"
-	"distributed_calculator/worker/internal/config"
-	transport "distributed_calculator/worker/internal/transport"
 	"encoding/json"
 	"fmt"
 	"log/slog"
 	"time"
+	"worker/internal/config"
+	transport "worker/internal/transport"
 
 	amqp "github.com/rabbitmq/amqp091-go"
 )

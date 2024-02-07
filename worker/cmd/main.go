@@ -1,10 +1,10 @@
 package main
 
 import (
-	"distributed_calculator/worker/app"
-	"distributed_calculator/worker/internal/config"
 	"os/signal"
 	"syscall"
+	"worker/app"
+	"worker/internal/config"
 
 	"log/slog"
 	"os"

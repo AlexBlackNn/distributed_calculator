@@ -2,10 +2,10 @@ package app
 
 import (
 	"context"
-	"distributed_calculator/worker/internal/config"
-	service "distributed_calculator/worker/internal/service"
-	"distributed_calculator/worker/internal/transport/rabbit"
 	"log/slog"
+	"worker/internal/config"
+	service "worker/internal/service"
+	"worker/internal/transport/rabbit"
 )
 
 type MessageBrokerInterface interface {
