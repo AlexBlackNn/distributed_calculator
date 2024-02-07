@@ -97,5 +97,7 @@ func (os *OrchestratorService) CalculationRequest(
 func (os *OrchestratorService) ParseResponse(
 	ctx context.Context,
 ) {
+	// should return channel and using the channgel we need to write to postgres results
 	os.messageBroker.Receive()
+
 }
