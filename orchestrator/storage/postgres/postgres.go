@@ -3,9 +3,11 @@ package postgres
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"fmt"
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"orchestrator/internal/domain/models"
+	"orchestrator/storage"
 )
 
 type Storage struct {
@@ -29,8 +31,16 @@ func (s *Storage) Stop() error {
 
 func (s *Storage) SaveOperation(
 	ctx context.Context,
-	settings models.Operation,
+	operation models.Operation,
 ) error {
+	query := "INSERT INTO operations(id, operation) VALUES($1, $2)"
+	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation)
+	if err != nil {
+		return fmt.Errorf(
+			"DATA LAYER: storage.postgres.SaveOperation: couldn't save user  %w",
+			err,
+		)
+	}
 	return nil
 }
 
@@ -38,18 +48,47 @@ func (s *Storage) GetOperation(
 	ctx context.Context,
 	operation string,
 ) (models.Operation, error) {
-	return models.Operation{
-		Id:           "1",
-		Operation:    "(2+2)*2",
-		CreationAt:   "2024-02-07",
-		CalculatedAt: "2024-02-07",
-	}, nil
+
+	query := "SELECT id, operation, creation_at, calculated_at FROM operations WHERE (operation = $1);"
+	row := s.db.QueryRowContext(ctx, query, operation)
+
+	var foundOperation models.Operation
+	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.CreationAt, &foundOperation.CalculatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return foundOperation, fmt.Errorf(
+				"DATA LAYER: storage.postgres.GetOperation: %w",
+				storage.ErrOperationNotFound,
+			)
+		}
+		return foundOperation, fmt.Errorf(
+			"DATA LAYER: storage.postgres.GetOperation: %w",
+			err,
+		)
+	}
+	return foundOperation, nil
 }
 
 func (s *Storage) SaveOperationExecutionTime(
 	ctx context.Context,
 	settings models.Settings,
 ) error {
+	query := "INSERT INTO settings(id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time ) VALUES($1, $2)"
+	_, err := s.db.ExecContext(
+		ctx,
+		query,
+		settings.Id,
+		settings.PlusOperationExecutionTime,
+		settings.MinusOperationExecutionTime,
+		settings.MultiplicationExecutionTime,
+		settings.DivisionExecutionTime,
+	)
+	if err != nil {
+		return fmt.Errorf(
+			"DATA LAYER: storage.postgres.SaveOperation: couldn't save user  %w",
+			err,
+		)
+	}
 	return nil
 }
 

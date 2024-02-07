@@ -5,9 +5,9 @@ services:
     ports:
       - "6379:6379"
     env_file:
-      - ./.env-auth
+      - .env-auth
     volumes:
-      - $HOME/cache-auth_service:/data
+      - $HOME/cache-orchestrator_service:/data
 
   db:
     image: postgres:16.1
@@ -16,7 +16,7 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - ./.env-auth
+      - .env-auth
 
 
   rabbit_mq:
@@ -30,3 +30,10 @@ services:
       - '15672:15672'
     volumes:
       - ./rabbitmq_data:/usr/share/rabbitmq/data
+
+  worker:
+    build:
+      context: ../worker
+    restart: unless-stopped
+    depends_on:
+      - rabbit_mq

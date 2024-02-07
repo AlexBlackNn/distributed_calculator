@@ -22,7 +22,7 @@ func New(
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
-	// init service layer
+	// init orchestrator_service layer
 	calculator := service.New()
 	//init rabbitmq
 	messageBroker, err := rabbit.New(log, cfg, calculator)
