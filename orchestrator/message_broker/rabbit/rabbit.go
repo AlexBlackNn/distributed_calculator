@@ -8,7 +8,7 @@ import (
 	"log"
 	"time"
 
-	"distributed_calculator/message_broker"
+	"distributed_calculator/orchestrator/message_broker"
 	amqp "github.com/rabbitmq/amqp091-go"
 )
 
@@ -158,7 +158,7 @@ func main() {
 	message := message_broker.RequestMessage{
 		Id:                    uuid.New().String(),
 		MessageExectutionTime: execTime,
-		Operation:             "1*2+3-4*2/10",
+		Operation:             "1*2",
 	}
 	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {

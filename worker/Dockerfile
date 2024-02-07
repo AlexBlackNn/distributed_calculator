@@ -1,7 +1,7 @@
 FROM golang:latest AS build
 WORKDIR /app
-COPY . /app/
-RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o . cmd/sso/main.go
+COPY worker /app/
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o . cmd/worker/main.go
 
 FROM scratch
 COPY --from=build /app/main /app/config/demo.yaml /app/
