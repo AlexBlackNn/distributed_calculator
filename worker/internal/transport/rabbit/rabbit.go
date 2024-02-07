@@ -106,7 +106,7 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Conf
 			err,
 		)
 	}
-	log.Info("Marshal message %v", message)
+	log.Info("Marshal message: ", "message", message)
 
 	err = mb.channel.PublishWithContext(ctx,
 		"",                    // exchange
@@ -124,7 +124,7 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Conf
 			err,
 		)
 	}
-	log.Info("Publish message %v", message)
+	log.Info("Publish message: ", "message", message)
 	return nil
 }
 
@@ -156,16 +156,16 @@ func (mb *MessageBroker) Receive(cfg *config.Config) error {
 			requestMessage := transport.RequestMessage{}
 			err := json.Unmarshal(msg.Body, &requestMessage)
 			if err != nil {
-				fmt.Println(err)
+				log.Error(err.Error())
 			}
-			fmt.Println(requestMessage)
+			log.Info("get request message: ", "message", requestMessage)
 			result := mb.calculatorService.Start(requestMessage.Operation)
 			responseMessage := transport.ResponseMessage{
 				Id:    requestMessage.Id,
 				Value: result,
 				Err:   nil,
 			}
-			fmt.Println("=====>>>", responseMessage)
+			log.Info("formed response message", "message", responseMessage)
 			mb.Send(context.Background(), responseMessage, cfg)
 			msg.Ack(false)
 		}
