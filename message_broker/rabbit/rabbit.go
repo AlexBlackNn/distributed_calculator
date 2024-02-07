@@ -150,15 +150,15 @@ func main() {
 	}
 
 	execTime := message_broker.ExectutionTime{
-		PlusOperationExecutionTime:           100,
-		MinusOperationExecutionTime:          200,
-		MultiplicationOperationExecutionTime: 300,
-		DivisionOperationExecutionTime:       400,
+		PlusOperationExecutionTime:           10000,
+		MinusOperationExecutionTime:          10000,
+		MultiplicationOperationExecutionTime: 10000,
+		DivisionOperationExecutionTime:       10000,
 	}
 	message := message_broker.RequestMessage{
 		Id:                   uuid.New().String(),
 		MessageExecutionTime: execTime,
-		Operation:            "9*8+(7-8)*2-2",
+		Operation:            "11*22+27",
 	}
 	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {

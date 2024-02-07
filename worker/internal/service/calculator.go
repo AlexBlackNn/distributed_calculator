@@ -1,8 +1,9 @@
 package calculator
 
 import (
-	"fmt"
+	transport "distributed_calculator/worker/internal/transport"
 	"strconv"
+	"time"
 	"unicode"
 )
 
@@ -58,9 +59,11 @@ func prec(s string) int {
 	}
 }
 
-func (st *Calculator) InfixToPostfix(infix string) {
+func (st *Calculator) InfixToPostfix(message transport.RequestMessage) {
+	st.Stack = Stack{}
+	st.postfix = ""
 	var operand string
-	for _, char := range infix {
+	for _, char := range message.Operation {
 		opchar := string(char)
 		// if scanned character is operand, add it to output string
 		if unicode.IsDigit(char) {
@@ -97,7 +100,7 @@ func (st *Calculator) InfixToPostfix(infix string) {
 	}
 }
 
-func (st *Calculator) EvaluatePostfix() int {
+func (st *Calculator) EvaluatePostfix(message transport.RequestMessage) int {
 	var fullNum string
 	for _, char := range st.postfix {
 		str := string(char)
@@ -118,12 +121,16 @@ func (st *Calculator) EvaluatePostfix() int {
 			switch str {
 			case "+":
 				res = op1 + op2
+				time.Sleep(time.Duration(message.MessageExectutionTime.PlusOperationExecutionTime) * time.Millisecond)
 			case "-":
 				res = op1 - op2
+				time.Sleep(time.Duration(message.MessageExectutionTime.MinusOperationExecutionTime) * time.Millisecond)
 			case "*":
 				res = op1 * op2
+				time.Sleep(time.Duration(message.MessageExectutionTime.MultiplicationOperationExecutionTime) * time.Millisecond)
 			case "/":
 				res = op1 / op2
+				time.Sleep(time.Duration(message.MessageExectutionTime.DivisionOperationExecutionTime) * time.Millisecond)
 			}
 			st.Push(strconv.Itoa(res))
 		}
@@ -132,19 +139,12 @@ func (st *Calculator) EvaluatePostfix() int {
 	return result
 }
 
-func (st *Calculator) Start(infix string) int {
-	st.InfixToPostfix(infix)
-	return st.EvaluatePostfix()
+func (st *Calculator) Start(requestMessage transport.RequestMessage) int {
+	st.InfixToPostfix(requestMessage)
+	return st.EvaluatePostfix(requestMessage)
 }
 
 func New() *Calculator {
 	stack := Stack{}
 	return &Calculator{"", stack}
-}
-
-func main() {
-	calculator := New()
-	infix := "(11-1)/2+1*(22+11)*2/2"
-	result := calculator.Start(infix)
-	fmt.Println(result)
 }

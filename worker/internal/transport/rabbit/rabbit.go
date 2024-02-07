@@ -22,7 +22,7 @@ type MessageBroker struct {
 }
 
 type ServiceInterface interface {
-	Start(infix string) int
+	Start(transport.RequestMessage) int
 }
 
 func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterface) (*MessageBroker, error) {
@@ -80,19 +80,27 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 	}, nil
 }
 
-func (mb *MessageBroker) Stop() error {
+func (mb *MessageBroker) Stop() {
+	log := mb.logger.With(
+		slog.String("info", "TRANSPORT LAYER: Stop"),
+	)
 	err := mb.connection.Close()
 	if err != nil {
-		return err
+		log.Error(
+			"TRANSPORT LAYER: rabbit.Stop: couldn't close rabbit connection",
+			"error", err.Error(),
+		)
 	}
 	err = mb.channel.Close()
 	if err != nil {
-		return err
+		log.Error(
+			"TRANSPORT LAYER: rabbit.Stop: couldn't close rabbit channel",
+			"error", err.Error(),
+		)
 	}
-	return nil
 }
 
-func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Config) error {
+func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Config) {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 	log := mb.logger.With(
@@ -100,10 +108,9 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Conf
 	)
 	body, err := json.Marshal(message)
 	if err != nil {
-		return fmt.Errorf(
-			"TRANSPORT LAYER: rabbit.New: couldn't convert message %v to bytes: %w",
-			message,
-			err,
+		log.Error(
+			"TRANSPORT LAYER: rabbit.Send: couldn't convert message to bytes",
+			"message", message, "error", err.Error(),
 		)
 	}
 	log.Info("Marshal message: ", "message", message)
@@ -119,16 +126,15 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Conf
 			Body:         body,
 		})
 	if err != nil {
-		return fmt.Errorf(
-			"TRANSPORT LAYER: rabbit.Send: couldn't send data: %w",
-			err,
+		log.Error(
+			"TRANSPORT LAYER: rabbit.Send: couldn't send message",
+			"message", message, "error", err.Error(),
 		)
 	}
 	log.Info("Publish message: ", "message", message)
-	return nil
 }
 
-func (mb *MessageBroker) Receive(cfg *config.Config) error {
+func (mb *MessageBroker) Receive(cfg *config.Config) {
 	log := mb.logger.With(
 		slog.String("info", "TRANSPORT LAYER: Receive"),
 	)
@@ -143,9 +149,9 @@ func (mb *MessageBroker) Receive(cfg *config.Config) error {
 		nil,
 	)
 	if err != nil {
-		return fmt.Errorf(
-			"TRANSPORT LAYER: rabbit.Receive: couldn't get messageChannel: %w",
-			err,
+		log.Error(
+			"TRANSPORT LAYER: rabbit.Receive: couldn't get messageChannel",
+			"error", err.Error(),
 		)
 	}
 	log.Info("Receiver is ready!")
@@ -159,7 +165,7 @@ func (mb *MessageBroker) Receive(cfg *config.Config) error {
 				log.Error(err.Error())
 			}
 			log.Info("get request message: ", "message", requestMessage)
-			result := mb.calculatorService.Start(requestMessage.Operation)
+			result := mb.calculatorService.Start(requestMessage)
 			responseMessage := transport.ResponseMessage{
 				Id:    requestMessage.Id,
 				Value: result,
@@ -172,5 +178,4 @@ func (mb *MessageBroker) Receive(cfg *config.Config) error {
 	}()
 	log.Info("[*] Waiting for messages!")
 	<-forever
-	return nil
 }

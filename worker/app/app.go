@@ -9,9 +9,9 @@ import (
 )
 
 type MessageBrokerInterface interface {
-	Send(context.Context, any, *config.Config) error
-	Receive(*config.Config) error
-	Stop() error
+	Send(context.Context, any, *config.Config)
+	Receive(*config.Config)
+	Stop()
 }
 
 type App struct {
