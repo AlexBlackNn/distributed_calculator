@@ -4,9 +4,17 @@ type ExectutionTime struct {
 	PlusOperationExecutionTime           int
 	MinusOperationExecutionTime          int
 	MultiplicationOperationExecutionTime int
-	Division_operation_execution_time    int
+	DivisionOperationExecutionTime       int
 }
-type Message struct {
-	MessageExectutionTime ExectutionTime
-	Operation             string
+
+type RequestMessage struct {
+	Id                   string
+	MessageExecutionTime ExectutionTime
+	Operation            string
+}
+
+type ResultMessage struct {
+	Id    string
+	Value int
+	Err   error
 }

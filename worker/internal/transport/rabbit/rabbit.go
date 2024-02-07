@@ -2,11 +2,10 @@ package rabbit
 
 import (
 	"context"
-	"distributed_calculator/message_broker"
 	"distributed_calculator/worker/internal/config"
+	transport "distributed_calculator/worker/internal/transport"
 	"encoding/json"
 	"fmt"
-	"log"
 	"log/slog"
 	"time"
 
@@ -30,14 +29,14 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 	connection, err := amqp.Dial(cfg.Rabbit.Amqp)
 	if err != nil {
 		return nil, fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.New: couldn't open a broker: %w",
+			"TRANSPORT LAYER: rabbit.New: couldn't open a broker: %w",
 			err,
 		)
 	}
 	channel, err := connection.Channel()
 	if err != nil {
 		return nil, fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.New: couldn't create channel: %w",
+			"TRANSPORT LAYER: rabbit.New: couldn't create channel: %w",
 			err,
 		)
 	}
@@ -67,7 +66,7 @@ func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterfac
 
 	if err != nil {
 		return nil, fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.New: couldn't create queue: %w",
+			"TRANSPORT LAYER: rabbit.New: couldn't create queue: %w",
 			err,
 		)
 	}
@@ -96,15 +95,19 @@ func (mb *MessageBroker) Stop() error {
 func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Config) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
-
+	log := mb.logger.With(
+		slog.String("info", "TRANSPORT LAYER: Send"),
+	)
 	body, err := json.Marshal(message)
 	if err != nil {
 		return fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.New: couldn't convert message %v to bytes: %w",
+			"TRANSPORT LAYER: rabbit.New: couldn't convert message %v to bytes: %w",
 			message,
 			err,
 		)
 	}
+	log.Info("Marshal message %v", message)
+
 	err = mb.channel.PublishWithContext(ctx,
 		"",                    // exchange
 		cfg.Rabbit.WriteQueue, // routing key
@@ -117,15 +120,18 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Conf
 		})
 	if err != nil {
 		return fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.Send: couldn't send data: %w",
+			"TRANSPORT LAYER: rabbit.Send: couldn't send data: %w",
 			err,
 		)
 	}
-	log.Printf(" [x] Sent %s\n", body)
+	log.Info("Publish message %v", message)
 	return nil
 }
 
 func (mb *MessageBroker) Receive(cfg *config.Config) error {
+	log := mb.logger.With(
+		slog.String("info", "TRANSPORT LAYER: Receive"),
+	)
 
 	messageChannel, err := mb.channel.Consume(
 		cfg.Rabbit.ReadQueue,
@@ -136,34 +142,35 @@ func (mb *MessageBroker) Receive(cfg *config.Config) error {
 		false,
 		nil,
 	)
-
 	if err != nil {
 		return fmt.Errorf(
-			"BROKER LAYER: broker.rabbit.Receive: couldn't get messageChannel: %w",
+			"TRANSPORT LAYER: rabbit.Receive: couldn't get messageChannel: %w",
 			err,
 		)
 	}
-
+	log.Info("Receiver is ready!")
 	var forever chan struct{}
 
 	go func() {
 		for msg := range messageChannel {
-			ctx := context.Background()
-			message := message_broker.Message{}
-			err := json.Unmarshal(msg.Body, &message)
-			fmt.Println(message)
+			requestMessage := transport.RequestMessage{}
+			err := json.Unmarshal(msg.Body, &requestMessage)
 			if err != nil {
 				fmt.Println(err)
 			}
-			// TODO send result back using one more channel
-			result := mb.calculatorService.Start(message.Operation)
-			fmt.Println("=====>>>", mb.calculatorService.Start(message.Operation))
-			mb.Send(ctx, result, cfg)
+			fmt.Println(requestMessage)
+			result := mb.calculatorService.Start(requestMessage.Operation)
+			responseMessage := transport.ResponseMessage{
+				Id:    requestMessage.Id,
+				Value: result,
+				Err:   nil,
+			}
+			fmt.Println("=====>>>", responseMessage)
+			mb.Send(context.Background(), responseMessage, cfg)
 			msg.Ack(false)
 		}
 	}()
-
-	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
+	log.Info("[*] Waiting for messages!")
 	<-forever
 	return nil
 }

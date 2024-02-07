@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/google/uuid"
 	"log"
 	"time"
 
@@ -71,7 +72,7 @@ func (mb *MessageBroker) Stop() error {
 	return nil
 }
 
-func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Message) error {
+func (mb *MessageBroker) Send(ctx context.Context, message message_broker.RequestMessage) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -126,7 +127,7 @@ func (mb *MessageBroker) Receive() error {
 
 	go func() {
 		for msg := range messageChannel {
-			message := message_broker.Message{}
+			message := message_broker.RequestMessage{}
 			err := json.Unmarshal(msg.Body, &message)
 			fmt.Println(message)
 			if err != nil {
@@ -152,11 +153,12 @@ func main() {
 		PlusOperationExecutionTime:           100,
 		MinusOperationExecutionTime:          200,
 		MultiplicationOperationExecutionTime: 300,
-		Division_operation_execution_time:    400,
+		DivisionOperationExecutionTime:       400,
 	}
-	message := message_broker.Message{
-		MessageExectutionTime: execTime,
-		Operation:             "9*8+(7-8)*2-2",
+	message := message_broker.RequestMessage{
+		Id:                   uuid.New().String(),
+		MessageExecutionTime: execTime,
+		Operation:            "9*8+(7-8)*2-2",
 	}
 	err = rabbitMqSender.Send(ctx, message)
 	if err != nil {

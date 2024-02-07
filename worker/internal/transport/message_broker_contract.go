@@ -1,22 +1,20 @@
 package message_broker
 
-import "github.com/google/uuid"
-
 type ExectutionTime struct {
 	PlusOperationExecutionTime           int
 	MinusOperationExecutionTime          int
 	MultiplicationOperationExecutionTime int
-	Division_operation_execution_time    int
+	DivisionOperationExecutionTime       int
 }
 
 type RequestMessage struct {
-	id                    uuid.UUID
+	Id                    string
 	MessageExectutionTime ExectutionTime
 	Operation             string
 }
 
-type ResultMessage struct {
-	id    uuid.UUID
+type ResponseMessage struct {
+	Id    string
 	Value int
 	Err   error
 }
