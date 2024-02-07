@@ -58,7 +58,7 @@ func main() {
 
 	application := New(log, cfg)
 
-	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+(2*2)+3")
+	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+(2*2)+1")
 	if err != nil {
 		fmt.Println(err)
 	}

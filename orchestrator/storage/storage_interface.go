@@ -24,7 +24,6 @@ type SettingsStorageInterface interface {
 	) error
 	GetOperationExecutionTime(
 		ctx context.Context,
-		value any,
 	) (models.Settings, error)
 }
 

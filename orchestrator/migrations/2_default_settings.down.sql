@@ -1,0 +1,3 @@
+TRUNCATE settings;
+
+

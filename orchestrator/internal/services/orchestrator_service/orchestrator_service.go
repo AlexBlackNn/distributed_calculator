@@ -24,11 +24,11 @@ type OrchestratorService struct {
 // New returns a new instance of Auth orchestrator_service
 func New(
 	log *slog.Logger,
-	// data layer
+// data layer
 	operationStorage storage.OperationStorageInterface,
 	settingsStorage storage.SettingsStorageInterface,
 	operationCache storage.OperationCacheInterface,
-	// broker
+// broker
 	messageBroker message_broker.MessageBrokerInterface,
 
 	cfg *config.Config,
@@ -63,12 +63,12 @@ func (os *OrchestratorService) CalculationRequest(
 	}
 	fmt.Println(operationInDb)
 
-	//TODO: get settings from database
+	execTimeModel, err := os.settingsStorage.GetOperationExecutionTime(ctx)
 	execTime := message_broker.ExectutionTime{
-		PlusOperationExecutionTime:           1000,
-		MinusOperationExecutionTime:          2000,
-		MultiplicationOperationExecutionTime: 1200,
-		DivisionOperationExecutionTime:       2500,
+		PlusOperationExecutionTime:           execTimeModel.PlusOperationExecutionTime,
+		MinusOperationExecutionTime:          execTimeModel.MinusOperationExecutionTime,
+		MultiplicationOperationExecutionTime: execTimeModel.MultiplicationExecutionTime,
+		DivisionOperationExecutionTime:       execTimeModel.DivisionExecutionTime,
 	}
 
 	userId := uuid.New().String()
