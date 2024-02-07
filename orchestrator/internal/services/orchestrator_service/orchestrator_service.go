@@ -6,6 +6,7 @@ import (
 	"github.com/google/uuid"
 	"log/slog"
 	"orchestrator/internal/config"
+	"orchestrator/internal/domain/models"
 	"orchestrator/message_broker"
 	"orchestrator/storage"
 )
@@ -24,11 +25,11 @@ type OrchestratorService struct {
 // New returns a new instance of Auth orchestrator_service
 func New(
 	log *slog.Logger,
-// data layer
+	// data layer
 	operationStorage storage.OperationStorageInterface,
 	settingsStorage storage.SettingsStorageInterface,
 	operationCache storage.OperationCacheInterface,
-// broker
+	// broker
 	messageBroker message_broker.MessageBrokerInterface,
 
 	cfg *config.Config,
@@ -61,7 +62,11 @@ func (os *OrchestratorService) CalculationRequest(
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(operationInDb)
+
+	// if found that operation is in progress, that is result is nil
+	if operationInDb.Operation != "" && operationInDb.Result == nil {
+		return "", nil
+	}
 
 	execTimeModel, err := os.settingsStorage.GetOperationExecutionTime(ctx)
 	execTime := message_broker.ExectutionTime{
@@ -79,5 +84,12 @@ func (os *OrchestratorService) CalculationRequest(
 	}
 
 	os.messageBroker.Send(ctx, message)
+
+	operationModel := models.Operation{
+		Id:        userId,
+		Operation: operation,
+	}
+
+	os.operationStorage.SaveOperation(ctx, operationModel, nil)
 	return userId, nil
 }

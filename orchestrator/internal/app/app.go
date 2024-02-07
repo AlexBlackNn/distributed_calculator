@@ -58,12 +58,11 @@ func main() {
 
 	application := New(log, cfg)
 
-	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+(2*2)+1")
+	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+(2*2)+3")
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(id)
-	//rabbitMqSender.Receive()
 }
 
 const (

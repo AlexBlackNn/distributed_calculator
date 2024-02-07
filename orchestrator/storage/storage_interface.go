@@ -9,7 +9,8 @@ import (
 type OperationStorageInterface interface {
 	SaveOperation(
 		ctx context.Context,
-		settings models.Operation,
+		operationModel models.Operation,
+		value any,
 	) error
 	GetOperation(
 		ctx context.Context,
