@@ -2,6 +2,7 @@ package calculator
 
 import (
 	transport "distributed_calculator/worker/internal/transport"
+	"fmt"
 	"strconv"
 	"time"
 	"unicode"
@@ -101,6 +102,7 @@ func (st *Calculator) InfixToPostfix(message transport.RequestMessage) {
 }
 
 func (st *Calculator) EvaluatePostfix(message transport.RequestMessage) int {
+	fmt.Println("=========+>", message.MessageExectutionTime)
 	var fullNum string
 	for _, char := range st.postfix {
 		str := string(char)

@@ -8,12 +8,12 @@ type ExectutionTime struct {
 }
 
 type RequestMessage struct {
-	Id                   string
-	MessageExecutionTime ExectutionTime
-	Operation            string
+	Id                    string
+	MessageExectutionTime ExectutionTime
+	Operation             string
 }
 
-type ResultMessage struct {
+type ResponseMessage struct {
 	Id    string
 	Value int
 	Err   error
