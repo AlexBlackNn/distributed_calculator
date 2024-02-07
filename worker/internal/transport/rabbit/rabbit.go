@@ -27,7 +27,7 @@ type ServiceInterface interface {
 }
 
 func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterface) (*MessageBroker, error) {
-	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+	connection, err := amqp.Dial(cfg.Rabbit.Amqp)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"BROKER LAYER: broker.rabbit.New: couldn't open a broker: %w",
@@ -93,7 +93,7 @@ func (mb *MessageBroker) Stop() error {
 	return nil
 }
 
-func (mb *MessageBroker) Send(ctx context.Context, message any, queueName string) error {
+func (mb *MessageBroker) Send(ctx context.Context, message any, cfg *config.Config) error {
 	ctx, cancel := context.WithTimeout(ctx, 5*time.Second)
 	defer cancel()
 
@@ -106,10 +106,10 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, queueName string
 		)
 	}
 	err = mb.channel.PublishWithContext(ctx,
-		"",        // exchange
-		queueName, // routing key
-		false,     // mandatory
-		false,     // immediate
+		"",                    // exchange
+		cfg.Rabbit.WriteQueue, // routing key
+		false,                 // mandatory
+		false,                 // immediate
 		amqp.Publishing{
 			DeliveryMode: amqp.Persistent,
 			ContentType:  "text/plain",
@@ -125,10 +125,10 @@ func (mb *MessageBroker) Send(ctx context.Context, message any, queueName string
 	return nil
 }
 
-func (mb *MessageBroker) Receive(queueName string) error {
+func (mb *MessageBroker) Receive(cfg *config.Config) error {
 
 	messageChannel, err := mb.channel.Consume(
-		queueName,
+		cfg.Rabbit.ReadQueue,
 		"",
 		false,
 		false,
@@ -158,7 +158,7 @@ func (mb *MessageBroker) Receive(queueName string) error {
 			// TODO send result back using one more channel
 			result := mb.calculatorService.Start(message.Operation)
 			fmt.Println("=====>>>", mb.calculatorService.Start(message.Operation))
-			mb.Send(ctx, result, "result")
+			mb.Send(ctx, result, cfg)
 			msg.Ack(false)
 		}
 	}()

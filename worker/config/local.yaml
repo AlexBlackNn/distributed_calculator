@@ -2,3 +2,7 @@ env: "local" #demo, prod
 storage_path: "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
 redis_address: "localhost:6379" # in case of redis usage insted of redis_sentinel
 jaeger_url: "http://localhost:14268/api/traces"
+rabbit_mq:
+  read_queue: "operation"
+  write_queue: "result"
+  amqp: "amqp://guest:guest@localhost:5672/"

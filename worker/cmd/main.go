@@ -19,7 +19,7 @@ func main() {
 	log.Info("starting application", slog.String("env", cfg.Env))
 
 	application := app.New(log, cfg)
-	go application.MessageBroker.Receive("operation")
+	go application.MessageBroker.Receive(cfg)
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 	signalType := <-stop

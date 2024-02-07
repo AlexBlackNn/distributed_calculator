@@ -6,13 +6,18 @@ import (
 	"os"
 )
 
+type RabbitConfig struct {
+	ReadQueue  string `yaml:"read_queue"`
+	WriteQueue string `yaml:"write_queue"`
+	Amqp       string `yaml:"amqp"`
+}
+
 type Config struct {
-	// without this param will be used "local" as param value
-	Env          string `yaml:"env" env-default:"local"`
-	RedisAddress string `yaml:"redis_address"`
-	// without this param can't work
-	StoragePath string `yaml:"storage_path"`
-	JaegerUrl   string `yaml:"jaeger_url"`
+	Env          string       `yaml:"env" env-default:"local"`
+	RedisAddress string       `yaml:"redis_address"`
+	StoragePath  string       `yaml:"storage_path"`
+	JaegerUrl    string       `yaml:"jaeger_url"`
+	Rabbit       RabbitConfig `yaml:"rabbit_mq"`
 }
 
 func MustLoad() *Config {

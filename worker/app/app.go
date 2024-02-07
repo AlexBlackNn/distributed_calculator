@@ -9,8 +9,8 @@ import (
 )
 
 type MessageBrokerInterface interface {
-	Send(ctx context.Context, message any, string2 string) error
-	Receive(string) error
+	Send(context.Context, any, *config.Config) error
+	Receive(*config.Config) error
 	Stop() error
 }
 
