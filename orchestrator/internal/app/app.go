@@ -81,14 +81,14 @@ func main() {
 	fmt.Println("_______________________________________________________")
 	fmt.Println("*******************************************************")
 
-	id1, err := application.orchestrationService.CalculationRequest(ctx, "1*1+3")
+	id1, err := application.orchestrationService.CalculationRequest(ctx, "1*(1+(3*5))")
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println(">>>>>>>>>>>>> id1: ", id1)
 
 	go application.orchestrationService.ParseResponse(ctx)
-	id2, err := application.orchestrationService.CalculationRequest(ctx, "1*2+4")
+	id2, err := application.orchestrationService.CalculationRequest(ctx, "1*2+4/2")
 	fmt.Println(">>>>>>>>>>>>> id2: ", id1)
 
 	fmt.Println("*******************************************************")
