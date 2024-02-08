@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"github.com/levigross/grequests"
 	"log/slog"
 	"orchestrator/internal/config"
 	"orchestrator/internal/services/orchestrator_service"
@@ -59,17 +60,36 @@ func main() {
 
 	application := New(log, cfg)
 
-	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+2")
+	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+3")
 	if err != nil {
 		fmt.Println(err)
 	}
 	fmt.Println("1111111", id)
 
 	go application.orchestrationService.ParseResponse(ctx)
-	id, err = application.orchestrationService.CalculationRequest(ctx, "1*2+1")
+	id, err = application.orchestrationService.CalculationRequest(ctx, "1*2+4")
 	fmt.Println("22222222", id)
-	time.Sleep(10 * time.Second)
 
+	fmt.Println("_______________________________________________________")
+	url := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
+
+	// Send a GET request to the RabbitMQ Management API to get queue details
+	resp, err := grequests.Get(url, nil)
+	if err != nil {
+		fmt.Println("Error:", err)
+		return
+	}
+
+	var data map[string]interface{}
+	resp.JSON(&data)
+
+	if consumers, ok := data["consumers"].(float64); ok {
+		fmt.Println("Number of consumers connected to the queue:", consumers)
+	} else {
+		fmt.Println("Consumers information not available for this queue.")
+	}
+	fmt.Println("_______________________________________________________")
+	time.Sleep(10 * time.Second)
 }
 
 const (
