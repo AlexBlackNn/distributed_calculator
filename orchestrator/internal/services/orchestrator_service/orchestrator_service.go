@@ -60,12 +60,11 @@ func (os *OrchestratorService) CalculationRequest(
 	fmt.Println(operationInCache)
 	operationInDb, err := os.operationStorage.GetOperation(ctx, operation)
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("database Error", err)
 	}
-
-	// if found that operation is in progress, that is result is nil
-	if operationInDb.Operation != "" && operationInDb.Result == nil {
-		return "", nil
+	// if found that operation is in progress (result is nil) returns saved id
+	if operationInDb.Operation != "" {
+		return operationInDb.Id, nil
 	}
 
 	execTimeModel, err := os.settingsStorage.GetOperationExecutionTime(ctx)
@@ -76,9 +75,9 @@ func (os *OrchestratorService) CalculationRequest(
 		DivisionOperationExecutionTime:       execTimeModel.DivisionExecutionTime,
 	}
 
-	userId := uuid.New().String()
+	uid := uuid.New().String()
 	message := message_broker.RequestMessage{
-		Id:                    userId,
+		Id:                    uid,
 		MessageExectutionTime: execTime,
 		Operation:             operation,
 	}
@@ -86,12 +85,12 @@ func (os *OrchestratorService) CalculationRequest(
 	os.messageBroker.Send(ctx, message)
 
 	operationModel := models.Operation{
-		Id:        userId,
+		Id:        uid,
 		Operation: operation,
 	}
 
 	os.operationStorage.SaveOperation(ctx, operationModel, nil)
-	return userId, nil
+	return uid, nil
 }
 
 func (os *OrchestratorService) ParseResponse(
