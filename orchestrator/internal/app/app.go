@@ -10,6 +10,7 @@ import (
 	"orchestrator/storage/postgres"
 	"orchestrator/storage/redis"
 	"os"
+	"time"
 )
 
 type App struct {
@@ -58,12 +59,17 @@ func main() {
 
 	application := New(log, cfg)
 
-	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+(2*2)+10")
+	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+2")
 	if err != nil {
 		fmt.Println(err)
 	}
-	fmt.Println(id)
-	application.orchestrationService.ParseResponse(ctx)
+	fmt.Println("1111111", id)
+
+	go application.orchestrationService.ParseResponse(ctx)
+	id, err = application.orchestrationService.CalculationRequest(ctx, "1*2+1")
+	fmt.Println("22222222", id)
+	time.Sleep(10 * time.Second)
+
 }
 
 const (

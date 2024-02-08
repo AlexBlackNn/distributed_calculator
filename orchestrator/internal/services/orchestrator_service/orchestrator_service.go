@@ -98,12 +98,21 @@ func (os *OrchestratorService) ParseResponse(
 	ctx context.Context,
 ) {
 	// should return channel and using the channgel we need to write to postgres results
+	fmt.Println("receiver")
 	result, err := os.messageBroker.Receive()
 	if err != nil {
 		fmt.Println(err)
 	}
 	for msg := range result {
 		fmt.Println(msg)
-	}
 
+		opr := models.Operation{
+			Id:     msg.Id,
+			Result: msg.Value,
+		}
+		err := os.operationStorage.UpdateOperation(ctx, opr)
+		if err != nil {
+			fmt.Println(err)
+		}
+	}
 }

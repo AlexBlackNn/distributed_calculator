@@ -4,6 +4,6 @@ type Operation struct {
 	Id           string
 	Operation    string
 	Result       any
-	CreationAt   string
+	CreatedAt    string
 	CalculatedAt any
 }

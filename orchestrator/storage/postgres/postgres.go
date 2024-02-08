@@ -8,6 +8,7 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 	"orchestrator/internal/domain/models"
 	"orchestrator/storage"
+	"time"
 )
 
 type Storage struct {
@@ -34,11 +35,26 @@ func (s *Storage) SaveOperation(
 	operation models.Operation,
 	value any,
 ) error {
-	query := "INSERT INTO operations(uid, operation, result) VALUES($1, $2, $3)"
-	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation, value)
+	query := "INSERT INTO operations(uid, operation, result, created_at) VALUES($1, $2, $3, $4)"
+	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation, value, time.Now())
 	if err != nil {
 		return fmt.Errorf(
-			"DATA LAYER: storage.postgres.SaveOperation: couldn't save user  %w",
+			"DATA LAYER: storage.postgres.SaveOperation: couldn't save Operation  %w",
+			err,
+		)
+	}
+	return nil
+}
+
+func (s *Storage) UpdateOperation(
+	ctx context.Context,
+	operation models.Operation,
+) error {
+	query := "UPDATE operations SET result = $1, calculated_at = $2 WHERE uid = $3;"
+	_, err := s.db.ExecContext(ctx, query, operation.Result, time.Now(), operation.Id)
+	if err != nil {
+		return fmt.Errorf(
+			"DATA LAYER: storage.postgres.UpdateOperation: couldn't update Operation  %w",
 			err,
 		)
 	}
@@ -50,11 +66,11 @@ func (s *Storage) GetOperation(
 	operation string,
 ) (models.Operation, error) {
 
-	query := "SELECT uid, operation, result, creation_at, calculated_at FROM operations WHERE (operation = $1);"
+	query := "SELECT uid, operation, result, created_at, calculated_at FROM operations WHERE (operation = $1);"
 	row := s.db.QueryRowContext(ctx, query, operation)
 
 	var foundOperation models.Operation
-	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.Result, &foundOperation.CreationAt, &foundOperation.CalculatedAt)
+	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.Result, &foundOperation.CreatedAt, &foundOperation.CalculatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return foundOperation, fmt.Errorf(
@@ -70,6 +86,7 @@ func (s *Storage) GetOperation(
 	return foundOperation, nil
 }
 
+// change to update
 func (s *Storage) SaveOperationExecutionTime(
 	ctx context.Context,
 	settings models.Settings,
