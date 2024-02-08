@@ -60,16 +60,6 @@ func main() {
 
 	application := New(log, cfg)
 
-	id, err := application.orchestrationService.CalculationRequest(ctx, "1*1+3")
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println("1111111", id)
-
-	go application.orchestrationService.ParseResponse(ctx)
-	id, err = application.orchestrationService.CalculationRequest(ctx, "1*2+4")
-	fmt.Println("22222222", id)
-
 	fmt.Println("_______________________________________________________")
 	url := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
 
@@ -89,7 +79,33 @@ func main() {
 		fmt.Println("Consumers information not available for this queue.")
 	}
 	fmt.Println("_______________________________________________________")
+	fmt.Println("*******************************************************")
+
+	id1, err := application.orchestrationService.CalculationRequest(ctx, "1*1+3")
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(">>>>>>>>>>>>> id1: ", id1)
+
+	go application.orchestrationService.ParseResponse(ctx)
+	id2, err := application.orchestrationService.CalculationRequest(ctx, "1*2+4")
+	fmt.Println(">>>>>>>>>>>>> id2: ", id1)
+
+	fmt.Println("*******************************************************")
+
 	time.Sleep(10 * time.Second)
+	fmt.Println("_______________________________________________________")
+	result1, err := application.orchestrationService.CalculationResult(ctx, id1)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(">>>>>>>>>>>>> result1: ", result1)
+	result2, err := application.orchestrationService.CalculationResult(ctx, id2)
+	if err != nil {
+		fmt.Println(err)
+	}
+	fmt.Println(">>>>>>>>>>>>> result2: ", result2)
+	fmt.Println("_______________________________________________________")
 }
 
 const (

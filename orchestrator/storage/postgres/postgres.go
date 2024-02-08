@@ -86,6 +86,31 @@ func (s *Storage) GetOperation(
 	return foundOperation, nil
 }
 
+func (s *Storage) GetOperationById(
+	ctx context.Context,
+	uid string,
+) (models.Operation, error) {
+
+	query := "SELECT uid, operation, result, created_at, calculated_at FROM operations WHERE (uid = $1);"
+	row := s.db.QueryRowContext(ctx, query, uid)
+
+	var foundOperation models.Operation
+	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.Result, &foundOperation.CreatedAt, &foundOperation.CalculatedAt)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return foundOperation, fmt.Errorf(
+				"DATA LAYER: storage.postgres.GetOperationById: %w",
+				storage.ErrOperationNotFound,
+			)
+		}
+		return foundOperation, fmt.Errorf(
+			"DATA LAYER: storage.postgres.GetOperationById: %w",
+			err,
+		)
+	}
+	return foundOperation, nil
+}
+
 // change to update
 func (s *Storage) SaveOperationExecutionTime(
 	ctx context.Context,

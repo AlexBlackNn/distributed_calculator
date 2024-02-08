@@ -16,6 +16,10 @@ type OperationStorageInterface interface {
 		ctx context.Context,
 		operation string,
 	) (models.Operation, error)
+	GetOperationById(
+		ctx context.Context,
+		id string,
+	) (models.Operation, error)
 	UpdateOperation(
 		ctx context.Context,
 		operation models.Operation,

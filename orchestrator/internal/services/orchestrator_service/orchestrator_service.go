@@ -115,3 +115,27 @@ func (os *OrchestratorService) ParseResponse(
 		}
 	}
 }
+
+func (os *OrchestratorService) CalculationResult(
+	ctx context.Context,
+	id string,
+) (float64, error) {
+	log := os.log.With(
+		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationResult"),
+	)
+
+	log.Info("check if operation was calculated")
+
+	operationInDb, err := os.operationStorage.GetOperationById(ctx, id)
+	if err != nil {
+		fmt.Println("database Error", err)
+	}
+	// if found that operation is in progress (result is nil) returns saved id
+	// TODO: NEED TO CHECK and FIX
+	if operationInDb.Result == "" {
+		// TODO: create as errors of service layer
+		return 0, fmt.Errorf("Not Ready")
+	}
+	//TODO: create if it valid
+	return operationInDb.Result.(float64), nil
+}
