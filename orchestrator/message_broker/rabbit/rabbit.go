@@ -103,7 +103,9 @@ func (mb *MessageBroker) Send(ctx context.Context, message message_broker.Reques
 	return nil
 }
 
-func (mb *MessageBroker) Receive() error {
+func (mb *MessageBroker) Receive() (chan message_broker.ResponseMessage, error) {
+
+	results := make(chan message_broker.ResponseMessage)
 
 	messageChannel, err := mb.channel.Consume(
 		"result",
@@ -116,19 +118,18 @@ func (mb *MessageBroker) Receive() error {
 	)
 
 	if err != nil {
-		return fmt.Errorf(
+		return nil, fmt.Errorf(
 			"BROKER LAYER: broker.rabbit.Receive: couldn't get messageChannel: %w",
 			err,
 		)
 	}
-
-	var forever chan struct{}
 
 	go func() {
 		for msg := range messageChannel {
 			message := message_broker.ResponseMessage{}
 			err := json.Unmarshal(msg.Body, &message)
 			fmt.Println(message)
+			results <- message
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -137,6 +138,5 @@ func (mb *MessageBroker) Receive() error {
 	}()
 
 	log.Printf(" [*] Waiting for messages. To exit press CTRL+C")
-	<-forever
-	return nil
+	return results, nil
 }

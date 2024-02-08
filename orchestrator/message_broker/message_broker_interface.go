@@ -5,7 +5,7 @@ import (
 )
 
 type MessageBrokerInterface interface {
-	Receive() error
+	Receive() (chan ResponseMessage, error)
 	Send(context.Context, RequestMessage) error
 	Stop() error
 }
