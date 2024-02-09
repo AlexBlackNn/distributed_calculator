@@ -1,20 +1,15 @@
 package main
 
 import (
-	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/render"
-	"github.com/go-playground/validator/v10"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
-	"io"
 	"log/slog"
 	"net/http"
-	_ "orchestrator/cmd/orchestrator/docs"
+	_ "orchestrator/docs"
 	"orchestrator/internal/config"
 	"orchestrator/internal/http-server/handlers/url/expression"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
-	"orchestrator/internal/lib/api/response"
 	"os"
 	"os/signal"
 	"syscall"
@@ -37,7 +32,8 @@ import (
 
 // @externalDocs.description  OpenAPI
 // @externalDocs.url          https://swagger.io/resources/open-api/
-
+//
+//go:generate go run github.com/swaggo/swag/cmd/swag init
 func main() {
 	// init config
 	cfg := config.MustLoad()
@@ -54,7 +50,6 @@ func main() {
 
 	router.Route("/", func(r chi.Router) {
 		r.Post("/expression", expression.New(log))
-		r.Post("/expression_test", New(log))
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
 		))
@@ -128,75 +123,4 @@ func setupLogger(env string) *slog.Logger {
 		)
 	}
 	return log
-}
-
-type Request struct {
-	Expression string `json:"expression" validate:"required"`
-}
-
-type Response struct {
-	Id     string `json:"id"`
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
-}
-
-// @Summary Создание нового выражения
-// @Description Создает новое выражение на сервере
-// @Tags Expressions
-// @Accept json
-// @Produce json
-// @Param body body Request true "Запрос на создание выражения"
-// @Success 201 {object} Response
-// @Router /expression [post]
-func New(log *slog.Logger) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		log := log.With(
-			slog.String("op", "handlers.url.expression.New"),
-			slog.String("request_id", middleware.GetReqID(r.Context())),
-		)
-
-		var req Request
-
-		err := render.DecodeJSON(r.Body, &req)
-		if errors.Is(err, io.EOF) {
-			// Такую ошибку встретим, если получили запрос с пустым телом.
-			// Обработаем её отдельно
-			log.Error("request body is empty")
-
-			render.JSON(w, r, response.Error("empty request"))
-
-			return
-		}
-		if err != nil {
-			log.Error("failed to decode request body", err.Error())
-			render.JSON(w, r, response.Error("failed to decode request"))
-			return
-		}
-
-		log.Info("request body decoded", slog.Any("request", req))
-
-		if err := validator.New().Struct(req); err != nil {
-			validateErr := err.(validator.ValidationErrors)
-
-			log.Error("invalid request", err.Error())
-			render.JSON(w, r, response.ValidationError(validateErr))
-
-			return
-		}
-
-		expression := req.Expression
-
-		// TODO add service layer call
-
-		log.Info("expression calculating", slog.String("expression", expression))
-
-		responseOK(w, r, "1")
-	}
-}
-
-func responseOK(w http.ResponseWriter, r *http.Request, id string) {
-	render.JSON(w, r, Response{
-		Id:     id,
-		Status: "Ok",
-	})
 }

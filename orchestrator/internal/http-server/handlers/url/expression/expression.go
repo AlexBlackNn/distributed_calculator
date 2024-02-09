@@ -26,8 +26,8 @@ type Response struct {
 // @Tags Expressions
 // @Accept json
 // @Produce json
-// @Param body body ExpressionRequest true "Запрос на создание выражения"
-// @Success 201 {object} ExpressionResponse
+// @Param body body Request true "Запрос на создание выражения"
+// @Success 201 {object} Response
 // @Router /expression [post]
 func New(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
