@@ -57,6 +57,38 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/{uid}": {
+            "get": {
+                "description": "Получает результат по указанному идентификатору из хранилища",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Results"
+                ],
+                "summary": "Получение результата по идентификатору",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Идентификатор результата",
+                        "name": "uid",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/result.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -88,8 +120,22 @@ const docTemplate = `{
                 "error": {
                     "type": "string"
                 },
+                "result": {
+                    "type": "number"
+                },
                 "status": {
                     "type": "string"
+                }
+            }
+        },
+        "result.Response": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
                 }
             }
         }

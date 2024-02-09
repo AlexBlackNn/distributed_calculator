@@ -17,8 +17,17 @@ definitions:
     properties:
       error:
         type: string
+      result:
+        type: number
       status:
         type: string
+    type: object
+  result.Response:
+    properties:
+      id:
+        type: string
+      response:
+        $ref: '#/definitions/response.Response'
     type: object
 externalDocs:
   description: OpenAPI
@@ -37,6 +46,27 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /{uid}:
+    get:
+      consumes:
+      - application/json
+      description: Получает результат по указанному идентификатору из хранилища
+      parameters:
+      - description: Идентификатор результата
+        in: path
+        name: uid
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/result.Response'
+      summary: Получение результата по идентификатору
+      tags:
+      - Results
   /expression:
     post:
       consumes:

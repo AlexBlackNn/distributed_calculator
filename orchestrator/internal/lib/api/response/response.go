@@ -7,14 +7,16 @@ import (
 )
 
 type Response struct {
-	Status string `json:"status"`
-	Error  string `json:"error,omitempty"`
+	Status string  `json:"status"`
+	Error  string  `json:"error,omitempty"`
+	Result float64 `json:"result,omitempty"`
 }
 
 const (
 	StatusOK        = "Started"
 	StatusInProcess = "InProcess "
 	StatusError     = "Error"
+	StatusResult    = "Result"
 )
 
 func OK() Response {
@@ -33,7 +35,13 @@ func Error(msg string) Response {
 func InProcess(msg string) Response {
 	return Response{
 		Status: StatusInProcess,
-		Error:  msg,
+	}
+}
+
+func Result(result float64) Response {
+	return Response{
+		Status: StatusResult,
+		Result: result,
 	}
 }
 

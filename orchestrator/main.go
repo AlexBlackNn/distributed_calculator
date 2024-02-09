@@ -11,6 +11,7 @@ import (
 	"orchestrator/internal/app"
 	"orchestrator/internal/config"
 	"orchestrator/internal/http-server/handlers/url/expression"
+	"orchestrator/internal/http-server/handlers/url/result"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
 	"os"
 	"os/signal"
@@ -55,6 +56,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Route("/", func(r chi.Router) {
+		r.Get("/{uid}", result.New(log, application))
 		r.Post("/expression", expression.New(log, application))
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition

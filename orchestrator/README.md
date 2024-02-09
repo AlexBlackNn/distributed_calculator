@@ -1,7 +1,8 @@
 # Orchestrator
 
+Для генерации swagger документации
 ``` bash 
-cd orchestration
+cd orchestrator
 go generate ./...
 ```
 
@@ -11,6 +12,10 @@ go run internal/app/app.go --config=./config/local.yaml
 ``` bash 
 go run main.go --config=./config/local.yaml
 ```
+
+http://localhost:8080/swagger/index.html
+
+
 ``` bash 
 curl -X POST http://localhost:8080/expression -H "Content-Type: application/json" -d '{"expression": "2*2+3"}'
 ``` 
