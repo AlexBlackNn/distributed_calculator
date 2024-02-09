@@ -23,7 +23,69 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {},
+    "paths": {
+        "/expression": {
+            "post": {
+                "description": "Создает новое выражение на сервере",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Expressions"
+                ],
+                "summary": "Создание нового выражения",
+                "parameters": [
+                    {
+                        "description": "Запрос на создание выражения",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/main.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/main.Response"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "main.Request": {
+            "type": "object",
+            "required": [
+                "expression"
+            ],
+            "properties": {
+                "expression": {
+                    "type": "string"
+                }
+            }
+        },
+        "main.Response": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "status": {
+                    "type": "string"
+                }
+            }
+        }
+    },
     "externalDocs": {
         "description": "OpenAPI",
         "url": "https://swagger.io/resources/open-api/"
@@ -34,7 +96,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Swagger Example API",
 	Description:      "This is a sample server celler server.",

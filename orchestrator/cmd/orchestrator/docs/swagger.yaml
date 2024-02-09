@@ -1,4 +1,20 @@
-basePath: /api/v1
+definitions:
+  main.Request:
+    properties:
+      expression:
+        type: string
+    required:
+    - expression
+    type: object
+  main.Response:
+    properties:
+      error:
+        type: string
+      id:
+        type: string
+      status:
+        type: string
+    type: object
 externalDocs:
   description: OpenAPI
   url: https://swagger.io/resources/open-api/
@@ -15,5 +31,27 @@ info:
   termsOfService: http://swagger.io/terms/
   title: Swagger Example API
   version: "1.0"
-paths: {}
+paths:
+  /expression:
+    post:
+      consumes:
+      - application/json
+      description: Создает новое выражение на сервере
+      parameters:
+      - description: Запрос на создание выражения
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/main.Request'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Response'
+      summary: Создание нового выражения
+      tags:
+      - Expressions
 swagger: "2.0"

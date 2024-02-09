@@ -21,13 +21,6 @@ type Response struct {
 	Response response.Response `json:"response"`
 }
 
-//	type URLSaver interface {
-//		SaveURL(urlToSave string, alias string) (int64, error)
-//	}
-//
-// func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
-
-// PostExpressionHandler обработчик для POST запросов по адресу /expression
 // @Summary Создание нового выражения
 // @Description Создает новое выражение на сервере
 // @Tags Expressions
@@ -36,8 +29,6 @@ type Response struct {
 // @Param body body ExpressionRequest true "Запрос на создание выражения"
 // @Success 201 {object} ExpressionResponse
 // @Router /expression [post]
-//
-//go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLSaver
 func New(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		log := log.With(
