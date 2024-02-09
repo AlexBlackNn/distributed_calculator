@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	httpSwagger "github.com/swaggo/http-swagger/v2"
@@ -43,7 +44,9 @@ func main() {
 	log.Info("starting application", slog.String("env", cfg.Env))
 
 	// init app
+	ctx := context.Background()
 	application := app.New(log, cfg)
+	go application.OrchestrationService.ParseResponse(ctx)
 
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
