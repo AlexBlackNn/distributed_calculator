@@ -4,11 +4,14 @@ import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
+	"net/http"
 	"orchestrator/internal/config"
+	"orchestrator/internal/http-server/handlers/url/expression"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
 	"os"
 	"os/signal"
 	"syscall"
+	"time"
 )
 
 func main() {
@@ -25,11 +28,32 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Route("/", func(r chi.Router) {
+		r.Post("/expression", expression.New(log))
+	})
+
 	//application := app.New(log, cfg)
 
 	// graceful stop
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
+
+	srv := &http.Server{
+		Addr:         "localhost:8080",
+		Handler:      router,
+		ReadTimeout:  time.Duration(10 * time.Second),
+		WriteTimeout: time.Duration(10 * time.Second),
+		IdleTimeout:  time.Duration(10 * time.Second),
+	}
+
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Error("failed to start server")
+		}
+	}()
+
+	log.Info("server started")
+
 	signalType := <-stop
 	log.Info(
 		"application stopped",

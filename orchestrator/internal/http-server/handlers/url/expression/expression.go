@@ -8,9 +8,8 @@ import (
 	"log/slog"
 	"net/http"
 
-	"orchestrator/internal/lib/random"
-	"orchestrator/internal/storage"
-	resp "url-shortener/internal/lib/api/response"
+	"github.com/go-playground/validator/v10"
+	"orchestrator/internal/lib/api/response"
 )
 
 type Request struct {
@@ -18,25 +17,20 @@ type Request struct {
 }
 
 type Response struct {
-	Id     string `json:"expression"`
-	Status string `json:"status"`          // Create, InProcess, Error
-	Error  string `json:"error,omitempty"` //
+	Id       string            `json:"id"`
+	Response response.Response `json:"response"`
 }
-
-// TODO: move to config if needed
-const aliasLength = 6
 
 //go:generate go run github.com/vektra/mockery/v2@v2.28.2 --name=URLSaver
-type URLSaver interface {
-	SaveURL(urlToSave string, alias string) (int64, error)
-}
+//type URLSaver interface {
+//	SaveURL(urlToSave string, alias string) (int64, error)
+//}
+// func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 
-func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
+func New(log *slog.Logger) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		const op = "handlers.url.save.New"
-
 		log := log.With(
-			slog.String("op", op),
+			slog.String("op", "handlers.url.expression.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
@@ -48,15 +42,13 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 			// Обработаем её отдельно
 			log.Error("request body is empty")
 
-			render.JSON(w, r, resp.Error("empty request"))
+			render.JSON(w, r, response.Error("empty request"))
 
 			return
 		}
 		if err != nil {
-			log.Error("failed to decode request body", sl.Err(err))
-
-			render.JSON(w, r, resp.Error("failed to decode request"))
-
+			log.Error("failed to decode request body", err.Error())
+			render.JSON(w, r, response.Error("failed to decode request"))
 			return
 		}
 
@@ -65,43 +57,25 @@ func New(log *slog.Logger, urlSaver URLSaver) http.HandlerFunc {
 		if err := validator.New().Struct(req); err != nil {
 			validateErr := err.(validator.ValidationErrors)
 
-			log.Error("invalid request", sl.Err(err))
-
-			render.JSON(w, r, resp.ValidationError(validateErr))
-
-			return
-		}
-
-		alias := req.Alias
-		if alias == "" {
-			alias = random.NewRandomString(aliasLength)
-		}
-
-		id, err := urlSaver.SaveURL(req.URL, alias)
-		if errors.Is(err, storage.ErrURLExists) {
-			log.Info("url already exists", slog.String("url", req.URL))
-
-			render.JSON(w, r, resp.Error("url already exists"))
-
-			return
-		}
-		if err != nil {
-			log.Error("failed to add url", sl.Err(err))
-
-			render.JSON(w, r, resp.Error("failed to add url"))
+			log.Error("invalid request", err.Error())
+			render.JSON(w, r, response.ValidationError(validateErr))
 
 			return
 		}
 
-		log.Info("url added", slog.Int64("id", id))
+		expression := req.Expression
 
-		responseOK(w, r, alias)
+		// TODO add service layer call
+
+		log.Info("expression calculating", slog.String("expression", expression))
+
+		responseOK(w, r, "1")
 	}
 }
 
-func responseOK(w http.ResponseWriter, r *http.Request, alias string) {
+func responseOK(w http.ResponseWriter, r *http.Request, id string) {
 	render.JSON(w, r, Response{
-		Response: resp.OK(),
-		Alias:    alias,
+		Id:       id,
+		Response: response.OK(),
 	})
 }

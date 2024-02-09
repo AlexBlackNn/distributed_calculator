@@ -1,5 +1,13 @@
 # Orchestrator
+``` bash 
 go run internal/app/app.go --config=./config/local.yaml
+```
+``` bash 
+go run cmd/orchestrator/main.go --config=./config/local.yaml
+```
+``` bash 
+curl -X POST http://localhost:8080/expression -H "Content-Type: application/json" -d '{"expression": "2*2+3"}'
+``` 
 
 ## Задачи 
 1. [x] 1
