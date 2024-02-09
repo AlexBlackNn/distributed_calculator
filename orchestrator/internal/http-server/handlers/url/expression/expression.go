@@ -1,14 +1,15 @@
 package expression
 
 import (
+	"context"
 	"errors"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/go-playground/validator/v10"
 	"io"
 	"log/slog"
 	"net/http"
-
-	"github.com/go-playground/validator/v10"
+	"orchestrator/internal/app"
 	"orchestrator/internal/lib/api/response"
 )
 
@@ -29,8 +30,9 @@ type Response struct {
 // @Param body body Request true "Запрос на создание выражения"
 // @Success 201 {object} Response
 // @Router /expression [post]
-func New(log *slog.Logger) http.HandlerFunc {
+func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		ctx := context.Background()
 		log := log.With(
 			slog.String("op", "handlers.url.expression.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
@@ -64,14 +66,13 @@ func New(log *slog.Logger) http.HandlerFunc {
 
 			return
 		}
+		id, err := application.OrchestrationService.CalculationRequest(ctx, req.Expression)
+		if err != nil {
+			log.Error("invalid request", err.Error())
+		}
+		log.Info("expression calculating", slog.String("expression", req.Expression))
 
-		expression := req.Expression
-
-		// TODO add service layer call
-
-		log.Info("expression calculating", slog.String("expression", expression))
-
-		responseOK(w, r, "1")
+		responseOK(w, r, id)
 	}
 }
 

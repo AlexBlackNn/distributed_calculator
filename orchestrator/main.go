@@ -7,6 +7,7 @@ import (
 	"log/slog"
 	"net/http"
 	_ "orchestrator/docs"
+	"orchestrator/internal/app"
 	"orchestrator/internal/config"
 	"orchestrator/internal/http-server/handlers/url/expression"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
@@ -42,6 +43,8 @@ func main() {
 	log.Info("starting application", slog.String("env", cfg.Env))
 
 	// init app
+	application := app.New(log, cfg)
+
 	router := chi.NewRouter()
 	router.Use(middleware.RequestID)
 	router.Use(projectLogger.New(log))
@@ -49,7 +52,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Route("/", func(r chi.Router) {
-		r.Post("/expression", expression.New(log))
+		r.Post("/expression", expression.New(log, application))
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
 		))
