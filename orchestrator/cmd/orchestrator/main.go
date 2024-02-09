@@ -1,9 +1,11 @@
 package main
 
 import (
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"log/slog"
-	"orchestrator/internal/app"
 	"orchestrator/internal/config"
+	projectLogger "orchestrator/internal/http-server/middleware/logger"
 	"os"
 	"os/signal"
 	"syscall"
@@ -15,8 +17,15 @@ func main() {
 	// init logger
 	log := setupLogger(cfg.Env)
 	log.Info("starting application", slog.String("env", cfg.Env))
+
 	// init app
-	application := app.New(log, cfg)
+	router := chi.NewRouter()
+	router.Use(middleware.RequestID)
+	router.Use(projectLogger.New(log))
+	router.Use(middleware.Recoverer)
+	router.Use(middleware.URLFormat)
+
+	//application := app.New(log, cfg)
 
 	// graceful stop
 	stop := make(chan os.Signal, 1)
