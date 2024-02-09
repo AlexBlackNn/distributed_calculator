@@ -3,8 +3,10 @@ package main
 import (
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
+	httpSwagger "github.com/swaggo/http-swagger/v2"
 	"log/slog"
 	"net/http"
+	_ "orchestrator/cmd/orchestrator/docs"
 	"orchestrator/internal/config"
 	"orchestrator/internal/http-server/handlers/url/expression"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
@@ -13,6 +15,23 @@ import (
 	"syscall"
 	"time"
 )
+
+// @title           Swagger Example API
+// @version         1.0
+// @description     This is a sample server celler server.
+// @termsOfService  http://swagger.io/terms/
+
+// @contact.name   API Support
+// @contact.url    http://www.swagger.io/support
+// @contact.email  support@swagger.io
+
+// @license.name  Apache 2.0
+// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+
+// @host      localhost:8080
+
+// @externalDocs.description  OpenAPI
+// @externalDocs.url          https://swagger.io/resources/open-api/
 
 func main() {
 	// init config
@@ -28,11 +47,21 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	// PostExpressionHandler обработчик для POST запросов по адресу /expression
+	// @Summary Создание нового выражения
+	// @Description Создает новое выражение на сервере
+	// @Tags Expressions
+	// @Accept json
+	// @Produce json
+	// @Param body body ExpressionRequest true "Запрос на создание выражения"
+	// @Success 201 {object} ExpressionResponse
+	// @Router /expression [post]
 	router.Route("/", func(r chi.Router) {
 		r.Post("/expression", expression.New(log))
+		r.Get("/swagger/*", httpSwagger.Handler(
+			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+		))
 	})
-
-	//application := app.New(log, cfg)
 
 	// graceful stop
 	stop := make(chan os.Signal, 1)

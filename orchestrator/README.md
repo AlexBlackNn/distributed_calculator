@@ -9,6 +9,19 @@ go run cmd/orchestrator/main.go --config=./config/local.yaml
 curl -X POST http://localhost:8080/expression -H "Content-Type: application/json" -d '{"expression": "2*2+3"}'
 ``` 
 
+``` 
+export PATH=$(go env GOPATH)/bin:$PATH
+cd distributed_calculator/orchestrator/cmd/orchestrator
+swag init
+``` 
+
+Cannot use ginSwagger.WrapHandler(swaggerFiles.Handler)
+https://github.com/swaggo/gin-swagger/issues/16#issuecomment-512813933
+
+http://localhost:8080/swagger/index.html
+
+
+
 ## Задачи 
 1. [x] 1
 2. [x] 2
