@@ -10,8 +10,9 @@ import (
 	_ "orchestrator/docs"
 	"orchestrator/internal/app"
 	"orchestrator/internal/config"
-	"orchestrator/internal/http-server/handlers/url/expression"
-	"orchestrator/internal/http-server/handlers/url/result"
+	"orchestrator/internal/http-server/handlers/calculation/expression"
+	"orchestrator/internal/http-server/handlers/calculation/result"
+	"orchestrator/internal/http-server/handlers/monitoring/worker"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
 	"os"
 	"os/signal"
@@ -25,16 +26,16 @@ import (
 // @termsOfService  http://swagger.io/terms/
 
 // @contact.name   API Support
-// @contact.url    http://www.swagger.io/support
+// @contact.calculation    http://www.swagger.io/support
 // @contact.email  support@swagger.io
 
 // @license.name  Apache 2.0
-// @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
+// @license.calculation   http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host      localhost:8080
 
 // @externalDocs.description  OpenAPI
-// @externalDocs.url          https://swagger.io/resources/open-api/
+// @externalDocs.calculation          https://swagger.io/resources/open-api/
 //
 //go:generate go run github.com/swaggo/swag/cmd/swag init
 func main() {
@@ -59,8 +60,9 @@ func main() {
 		r.Get("/expression/{uid}", result.New(log, application))
 		r.Post("/expression", expression.New(log, application))
 		r.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition
+			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The calculation pointing to API definition
 		))
+		r.Get("/monitoring/worker", worker.New(log, application))
 	})
 
 	// graceful stop

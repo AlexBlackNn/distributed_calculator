@@ -34,7 +34,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		log := log.With(
-			slog.String("op", "handlers.url.expression.New"),
+			slog.String("op", "handlers.calculation.expression.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 

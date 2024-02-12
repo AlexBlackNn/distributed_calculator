@@ -5,7 +5,7 @@ import (
 	"github.com/gavv/httpexpect/v2"
 	"net/http"
 	"net/url"
-	"orchestrator/internal/http-server/handlers/url/expression"
+	"orchestrator/internal/http-server/handlers/calculation/expression"
 	"testing"
 	"time"
 )

@@ -12,12 +12,10 @@ const docTemplate = `{
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
             "name": "API Support",
-            "url": "http://www.swagger.io/support",
             "email": "support@swagger.io"
         },
         "license": {
-            "name": "Apache 2.0",
-            "url": "http://www.apache.org/licenses/LICENSE-2.0.html"
+            "name": "Apache 2.0"
         },
         "version": "{{.Version}}"
     },
@@ -89,6 +87,29 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/monitoring/worker": {
+            "get": {
+                "description": "Получает количество воркеров доступных для выполнения задачи",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Monitoring"
+                ],
+                "summary": "Получение количества активных воркеров",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/worker.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -138,11 +159,21 @@ const docTemplate = `{
                     "$ref": "#/definitions/response.Response"
                 }
             }
+        },
+        "worker.Response": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
         }
     },
     "externalDocs": {
-        "description": "OpenAPI",
-        "url": "https://swagger.io/resources/open-api/"
+        "description": "OpenAPI"
     }
 }`
 

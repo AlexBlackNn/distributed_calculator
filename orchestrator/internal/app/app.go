@@ -3,6 +3,7 @@ package app
 import (
 	"log/slog"
 	"orchestrator/internal/config"
+	"orchestrator/internal/services/monitoring_service"
 	"orchestrator/internal/services/orchestrator_service"
 	"orchestrator/message_broker/rabbit"
 	"orchestrator/storage/postgres"
@@ -12,6 +13,7 @@ import (
 
 type App struct {
 	OrchestrationService *orchestrator_service.OrchestratorService
+	MonitoringService    *monitoring_service.MonitoringService
 }
 
 func New(
@@ -31,7 +33,6 @@ func New(
 		panic(err)
 	}
 
-	//init orchestrator_service orchestrator_service (orchestrator_service)
 	orchestrationService := orchestrator_service.New(
 		log,
 		operationSettingsStorage,
@@ -41,8 +42,14 @@ func New(
 		cfg,
 	)
 
+	monitoringService := monitoring_service.New(
+		log,
+		cfg,
+	)
+
 	return &App{
 		OrchestrationService: orchestrationService,
+		MonitoringService:    monitoringService,
 	}
 }
 
@@ -58,10 +65,10 @@ func New(
 //	application := New(log, cfg)
 //
 //	fmt.Println("_______________________________________________________")
-//	url := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
+//	calculation := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
 //
 //	// Send a GET request to the RabbitMQ Management API to get queue details
-//	resp, err := grequests.Get(url, nil)
+//	resp, err := grequests.Get(calculation, nil)
 //	if err != nil {
 //		fmt.Println("Error:", err)
 //		return
