@@ -50,8 +50,8 @@ func (s *Storage) UpdateOperation(
 	ctx context.Context,
 	operation models.Operation,
 ) error {
-	query := "UPDATE operations SET result = $1, calculated_at = $2 WHERE uid = $3;"
-	_, err := s.db.ExecContext(ctx, query, operation.Result, time.Now(), operation.Id)
+	query := "UPDATE operations SET result = $1, status = $2, calculated_at = $3 WHERE uid = $4;"
+	_, err := s.db.ExecContext(ctx, query, operation.Result, operation.Status, time.Now(), operation.Id)
 	if err != nil {
 		return fmt.Errorf(
 			"DATA LAYER: storage.postgres.UpdateOperation: couldn't update Operation  %w",

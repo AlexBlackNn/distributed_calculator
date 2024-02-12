@@ -12,9 +12,11 @@ CREATE TABLE IF NOT EXISTS operations
     uid uuid PRIMARY KEY,
     operation varchar(200) UNIQUE,
     result float DEFAULT NULL,
+    status varchar(10),
     created_at timestamp DEFAULT CURRENT_TIMESTAMP,
     calculated_at timestamp
 );
+
 
 
 

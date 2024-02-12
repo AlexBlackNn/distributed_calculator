@@ -109,6 +109,7 @@ func (os *OrchestratorService) ParseResponse(
 		opr := models.Operation{
 			Id:     msg.Id,
 			Result: msg.Value,
+			Status: "success",
 		}
 		err := os.operationStorage.UpdateOperation(ctx, opr)
 		if err != nil {
@@ -136,8 +137,9 @@ func (os *OrchestratorService) CalculationResult(
 	}
 	// if found that operation is in progress (result is nil) returns saved id
 	// TODO: NEED TO CHECK and FIX
-	if operationInDb.Result == "" {
+	if nil == operationInDb.Result {
 		// TODO: create as errors of service layer
+
 		return 0, fmt.Errorf("Not Ready")
 	}
 	//TODO: create if it valid

@@ -45,13 +45,14 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			// Такую ошибку встретим, если получили запрос с пустым телом.
 			// Обработаем её отдельно
 			log.Error("request body is empty")
-
+			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, response.Error("empty request"))
 
 			return
 		}
 		if err != nil {
 			log.Error("failed to decode request body", err.Error())
+			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, response.Error("failed to decode request"))
 			return
 		}
@@ -60,15 +61,16 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 
 		if err := validator.New().Struct(req); err != nil {
 			validateErr := err.(validator.ValidationErrors)
-
+			render.Status(r, http.StatusBadRequest)
 			log.Error("invalid request", err.Error())
 			render.JSON(w, r, response.ValidationError(validateErr))
-
 			return
 		}
 		id, err := application.OrchestrationService.CalculationRequest(ctx, req.Expression)
 		if err != nil {
 			log.Error("invalid request", err.Error())
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, response.Error("Internal Error"))
 		}
 		log.Info("expression calculating", slog.String("expression", req.Expression))
 

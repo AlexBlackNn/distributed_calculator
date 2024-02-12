@@ -53,7 +53,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 				return
 			}
 			render.Status(r, http.StatusInternalServerError)
-			render.JSON(w, r, response.Error("internal error"))
+			render.JSON(w, r, response.Error("Internal error"))
 		}
 		log.Info("expression result", slog.Float64("result", result))
 		responseOK(w, r, currentUuid, result)
