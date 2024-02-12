@@ -56,13 +56,17 @@ func main() {
 	router.Use(middleware.Recoverer)
 	router.Use(middleware.URLFormat)
 
+	router.Route("/expression", func(r chi.Router) {
+		r.Get("/{uuid}", result.New(log, application))
+		r.Post("/", expression.New(log, application))
+	})
 	router.Route("/", func(r chi.Router) {
-		r.Get("/expression/{uuid}", result.New(log, application))
-		r.Post("/expression", expression.New(log, application))
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The calculation pointing to API definition
 		))
-		r.Get("/monitoring/worker", worker.New(log, application))
+	})
+	router.Route("/monitoring", func(r chi.Router) {
+		r.Get("/worker", worker.New(log, application))
 	})
 
 	// graceful stop
