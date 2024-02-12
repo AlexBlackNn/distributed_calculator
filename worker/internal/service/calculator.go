@@ -1,4 +1,4 @@
-package calculator
+package service
 
 import (
 	"strconv"
