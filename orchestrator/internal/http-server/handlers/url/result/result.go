@@ -18,12 +18,12 @@ type Response struct {
 
 // @Summary Получение результата по идентификатору
 // @Description Получает результат по указанному идентификатору из хранилища
-// @Tags Results
+// @Tags Calculations
 // @Accept json
 // @Produce json
 // @Param uid path string true "Идентификатор результата"
 // @Success 200 {object} Response
-// @Router /{uid} [get]
+// @Router /expression/{uid} [get]
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()

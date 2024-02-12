@@ -34,7 +34,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Expressions"
+                    "Calculations"
                 ],
                 "summary": "Создание нового выражения",
                 "parameters": [
@@ -58,7 +58,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/{uid}": {
+        "/expression/{uid}": {
             "get": {
                 "description": "Получает результат по указанному идентификатору из хранилища",
                 "consumes": [
@@ -68,7 +68,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Results"
+                    "Calculations"
                 ],
                 "summary": "Получение результата по идентификатору",
                 "parameters": [

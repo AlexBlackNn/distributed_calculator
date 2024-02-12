@@ -61,7 +61,7 @@ exit status 2
 ```
 3. Запускаем приложение локально
 ```bash
-go run cmd/orchestrator/main.go --config=./config/local.yaml
+go run ./main.go --config=./config/local.yaml
 ```
 
 ## Окружение развёртывания программного обеспечения - ДЕМО
@@ -86,35 +86,4 @@ main.main()
 exit status 2
 ```
 
-
-
-3. Опционально (тестирование) из папки тестов **tests**
-Тестирование необходимо проводить на ПУСТОЙ базе.  
-```bash 
-cd tests
-./run_demo_test.sh 
-```
-
-#### Мониторинг
-grafana: http://localhost:3000/grafana 
-jaeger: http://localhost:16686/jaeger/search
-
-#### Мысли об открытых портах в docker-compose
-Не вижу смысла закрывать порты на базе, редисе и т.д. в docker-compose.
-В проде врятли кто будет использовать docker-compose на 1 машине. Скорее всего 
-это будет k8s или еще какой-то оркестратор, а stateful приложения, вероятно, будут
-вынесены из кубера (холивар). 
-
-При тестировании через Postman необходимо добавить x-trace-id в metadata и 
-менять его перед каждым запросом.
-Например:11116f9a6be295d4ef5a6e030ef11110
-![postman.png](docs%2Fpostman.png)
-
-
-Пример трейсинга в jaeger
-![jaeger.png](docs%2Fjaeger.png)
-
-
-Сбор логов в локи и отображение в графане
-![loki-grafana.png](docs%2Floki-grafana.png)
 

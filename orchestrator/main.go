@@ -56,7 +56,7 @@ func main() {
 	router.Use(middleware.URLFormat)
 
 	router.Route("/", func(r chi.Router) {
-		r.Get("/{uid}", result.New(log, application))
+		r.Get("/expression/{uid}", result.New(log, application))
 		r.Post("/expression", expression.New(log, application))
 		r.Get("/swagger/*", httpSwagger.Handler(
 			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The url pointing to API definition

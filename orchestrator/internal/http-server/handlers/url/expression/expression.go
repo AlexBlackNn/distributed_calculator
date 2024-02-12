@@ -24,7 +24,7 @@ type Response struct {
 
 // @Summary Создание нового выражения
 // @Description Создает новое выражение на сервере
-// @Tags Expressions
+// @Tags Calculations
 // @Accept json
 // @Produce json
 // @Param body body Request true "Запрос на создание выражения"
