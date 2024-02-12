@@ -22,7 +22,7 @@ type MessageBroker struct {
 }
 
 type ServiceInterface interface {
-	Start(transport.RequestMessage) int
+	Start(transport.RequestMessage) (int, error)
 }
 
 func New(log *slog.Logger, cfg *config.Config, calculatorService ServiceInterface) (*MessageBroker, error) {
@@ -161,15 +161,27 @@ func (mb *MessageBroker) Receive(cfg *config.Config) {
 		for msg := range messageChannel {
 			requestMessage := transport.RequestMessage{}
 			err := json.Unmarshal(msg.Body, &requestMessage)
+			// TODO: Need to send error to rabbit mq
+
 			if err != nil {
 				log.Error(err.Error())
 			}
 			log.Info("get request message: ", "message", requestMessage)
-			result := mb.calculatorService.Start(requestMessage)
-			responseMessage := transport.ResponseMessage{
-				Id:    requestMessage.Id,
-				Value: result,
-				Err:   nil,
+			result, valErr := mb.calculatorService.Start(requestMessage)
+			var responseMessage transport.ResponseMessage
+			if valErr != nil {
+				responseMessage = transport.ResponseMessage{
+					Id:    requestMessage.Id,
+					Value: 0,
+					Err:   valErr.Error(),
+				}
+				fmt.Println("=========>>>", valErr)
+			} else {
+				responseMessage = transport.ResponseMessage{
+					Id:    requestMessage.Id,
+					Value: result,
+					Err:   "",
+				}
 			}
 			log.Info("formed response message", "message", responseMessage)
 			mb.Send(context.Background(), responseMessage, cfg)

@@ -1,6 +1,7 @@
 package service
 
 import (
+	"errors"
 	"strconv"
 	"time"
 	"unicode"
@@ -12,6 +13,7 @@ type Stack struct {
 }
 
 type Calculator struct {
+	Validator
 	postfix string
 	Stack
 }
@@ -139,12 +141,16 @@ func (st *Calculator) EvaluatePostfix(message transport.RequestMessage) int {
 	return result
 }
 
-func (st *Calculator) Start(requestMessage transport.RequestMessage) int {
+func (st *Calculator) Start(requestMessage transport.RequestMessage) (int, error) {
+	if !st.Validator.VerifyExpression(requestMessage.Operation) {
+		return 0, errors.New("unvalid expression")
+	}
 	st.InfixToPostfix(requestMessage)
-	return st.EvaluatePostfix(requestMessage)
+	return st.EvaluatePostfix(requestMessage), nil
 }
 
 func New() *Calculator {
 	stack := Stack{}
-	return &Calculator{"", stack}
+	validator := Validator{}
+	return &Calculator{validator, "", stack}
 }

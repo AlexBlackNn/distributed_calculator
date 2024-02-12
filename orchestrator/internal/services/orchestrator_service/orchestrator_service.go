@@ -101,16 +101,27 @@ func (os *OrchestratorService) ParseResponse(
 	fmt.Println("receiver")
 	result, err := os.messageBroker.Receive()
 	if err != nil {
-		fmt.Println(err)
+		fmt.Println("+++++++++++++++", err)
 	}
 	for msg := range result {
-		fmt.Println(msg)
-
-		opr := models.Operation{
-			Id:     msg.Id,
-			Result: msg.Value,
-			Status: "success",
+		fmt.Println("====================>>>>", msg)
+		var opr models.Operation
+		if msg.Err != "" {
+			opr = models.Operation{
+				Id:     msg.Id,
+				Result: msg.Value,
+				Status: "Error",
+			}
+			fmt.Println("===========1111111=========>>>>", opr)
+		} else {
+			opr = models.Operation{
+				Id:     msg.Id,
+				Result: msg.Value,
+				Status: "success",
+			}
+			fmt.Println("===========2222222=========>>>>", opr)
 		}
+
 		err := os.operationStorage.UpdateOperation(ctx, opr)
 		if err != nil {
 			fmt.Println(err)
@@ -141,6 +152,11 @@ func (os *OrchestratorService) CalculationResult(
 		// TODO: create as errors of service layer
 
 		return 0, fmt.Errorf("Not Ready")
+	}
+	if operationInDb.Status == "Error" {
+		// TODO: New error
+		fmt.Println("=====))))))))))))))))))))))++++++++++++> ERROR")
+		return 0, ErrFailedOperation
 	}
 	//TODO: create if it valid
 	return operationInDb.Result.(float64), nil

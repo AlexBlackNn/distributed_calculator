@@ -16,5 +16,5 @@ type RequestMessage struct {
 type ResponseMessage struct {
 	Id    string
 	Value int
-	Err   error
+	Err   string
 }

@@ -52,6 +52,11 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 				render.JSON(w, r, response.Error("Operation with requested uuid not found"))
 				return
 			}
+			if errors.Is(err, orchestrator_service.ErrFailedOperation) {
+				render.Status(r, http.StatusBadRequest)
+				render.JSON(w, r, response.Error("Validation expression error"))
+				return
+			}
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, response.Error("Internal error"))
 		}

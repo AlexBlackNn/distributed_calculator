@@ -91,11 +91,11 @@ func (s *Storage) GetOperationById(
 	uid string,
 ) (models.Operation, error) {
 
-	query := "SELECT uid, operation, result, created_at, calculated_at FROM operations WHERE (uid = $1);"
+	query := "SELECT uid, operation, result, status,  created_at, calculated_at FROM operations WHERE (uid = $1);"
 	row := s.db.QueryRowContext(ctx, query, uid)
 
 	var foundOperation models.Operation
-	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.Result, &foundOperation.CreatedAt, &foundOperation.CalculatedAt)
+	err := row.Scan(&foundOperation.Id, &foundOperation.Operation, &foundOperation.Result, &foundOperation.Status, &foundOperation.CreatedAt, &foundOperation.CalculatedAt)
 	if err != nil {
 		if errors.Is(err, sql.ErrNoRows) {
 			return foundOperation, fmt.Errorf(

@@ -1,18 +1,9 @@
 package service
 
-func IsValidOperation(op string) bool {
-	validOperators := map[string]bool{
-		"+": true,
-		"-": true,
-		"*": true,
-		"/": true,
-		"(": true,
-		")": true,
-	}
-	return validOperators[op]
+type Validator struct {
 }
 
-func VerifyExpression(expression string) bool {
+func (*Validator) VerifyExpression(expression string) bool {
 	stack := Stack{}
 	prevChar := ""
 	for _, char := range expression {
