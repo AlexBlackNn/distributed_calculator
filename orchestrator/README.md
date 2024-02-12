@@ -1,5 +1,7 @@
 # Orchestrator
 
+docker-compose scale worker=3
+
 Для генерации swagger документации
 ``` bash 
 cd orchestrator

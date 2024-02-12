@@ -2,6 +2,7 @@ package orchestrator_service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"github.com/google/uuid"
 	"log/slog"
@@ -128,7 +129,10 @@ func (os *OrchestratorService) CalculationResult(
 
 	operationInDb, err := os.operationStorage.GetOperationById(ctx, id)
 	if err != nil {
-		fmt.Println("database Error", err)
+		if errors.Is(err, storage.ErrOperationNotFound) {
+			return 0, ErrNoOperation
+		}
+		return 0, fmt.Errorf("SERVICE LAYER: orchestrator_service.CalculationResult: %w", err)
 	}
 	// if found that operation is in progress (result is nil) returns saved id
 	// TODO: NEED TO CHECK and FIX

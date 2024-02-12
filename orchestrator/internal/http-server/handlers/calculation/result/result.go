@@ -2,13 +2,16 @@ package result
 
 import (
 	"context"
+	"errors"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
+	"github.com/google/uuid"
 	"log/slog"
 	"net/http"
 	"orchestrator/internal/app"
 	"orchestrator/internal/lib/api/response"
+	"orchestrator/internal/services/orchestrator_service"
 )
 
 type Response struct {
@@ -23,7 +26,7 @@ type Response struct {
 // @Produce json
 // @Param uid path string true "Идентификатор результата"
 // @Success 200 {object} Response
-// @Router /expression/{uid} [get]
+// @Router /expression/{uuid} [get]
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
@@ -32,20 +35,28 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
 
-		uid := chi.URLParam(r, "uid")
-		if uid == "" {
-			log.Info("absent uid")
-			render.JSON(w, r, response.Error("absent uid"))
-		}
+		currentUuid := chi.URLParam(r, "uuid")
 
-		result, err := application.OrchestrationService.CalculationResult(ctx, uid)
-		// TODO: think about this error
+		if !IsValidUUID(currentUuid) {
+			log.Info("currentUuid", currentUuid)
+			render.Status(r, http.StatusBadRequest)
+			render.JSON(w, r, response.Error("wrong uuid"))
+			return
+		}
+		result, err := application.OrchestrationService.CalculationResult(ctx, currentUuid)
+
 		if err != nil {
-			log.Error("some errors", err.Error())
+			log.Error("internal error", err.Error())
+			if errors.Is(err, orchestrator_service.ErrNoOperation) {
+				render.Status(r, http.StatusNotFound)
+				render.JSON(w, r, response.Error("Operation with requested uuid not found"))
+				return
+			}
+			render.Status(r, http.StatusInternalServerError)
+			render.JSON(w, r, response.Error("internal error"))
 		}
 		log.Info("expression result", slog.Float64("result", result))
-
-		responseOK(w, r, uid, result)
+		responseOK(w, r, currentUuid, result)
 	}
 }
 
@@ -54,4 +65,9 @@ func responseOK(w http.ResponseWriter, r *http.Request, id string, result float6
 		Id:       id,
 		Response: response.Result(result),
 	})
+}
+
+func IsValidUUID(u string) bool {
+	_, err := uuid.Parse(u)
+	return err == nil
 }
