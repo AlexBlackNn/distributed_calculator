@@ -3,5 +3,6 @@ package storage
 import "errors"
 
 var (
-	ErrOperationNotFound = errors.New("operation not found")
+	ErrUnknownOperationType = errors.New("unknown operation type ")
+	ErrOperationNotFound    = errors.New("operation not found")
 )

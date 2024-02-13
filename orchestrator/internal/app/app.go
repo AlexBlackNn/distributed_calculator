@@ -5,7 +5,7 @@ import (
 	"orchestrator/internal/config"
 	"orchestrator/internal/services/monitoring_service"
 	"orchestrator/internal/services/orchestrator_service"
-	settings_service "orchestrator/internal/services/settings"
+	settings_service "orchestrator/internal/services/settings_service"
 	"orchestrator/message_broker/rabbit"
 	"orchestrator/storage/postgres"
 	"orchestrator/storage/redis"

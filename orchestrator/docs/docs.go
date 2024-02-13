@@ -111,7 +111,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/settings/plus-execution-time": {
+        "/settings/execution-time": {
             "post": {
                 "description": "Создает новое выражение на сервере",
                 "consumes": [
@@ -131,7 +131,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/execution_time_plus.Request"
+                            "$ref": "#/definitions/execution_time.Request"
                         }
                     }
                 ],
@@ -139,7 +139,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/execution_time_plus.Response"
+                            "$ref": "#/definitions/execution_time.Response"
                         }
                     }
                 }
@@ -147,18 +147,22 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "execution_time_plus.Request": {
+        "execution_time.Request": {
             "type": "object",
             "required": [
-                "execution_time"
+                "execution_time",
+                "operation_type"
             ],
             "properties": {
                 "execution_time": {
                     "type": "integer"
+                },
+                "operation_type": {
+                    "type": "string"
                 }
             }
         },
-        "execution_time_plus.Response": {
+        "execution_time.Response": {
             "type": "object",
             "properties": {
                 "id": {

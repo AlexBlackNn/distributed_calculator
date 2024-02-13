@@ -26,10 +26,20 @@ type OperationStorageInterface interface {
 	) error
 }
 
+type OperationType int
+
+const (
+	PlusOperation OperationType = iota
+	MinusOperation
+	MultiplicationOperation
+	DivisionOperation
+)
+
 type SettingsStorageInterface interface {
-	SaveOperationExecutionTime(
+	UpdateSettingsExecutionTime(
 		ctx context.Context,
-		settings models.Settings,
+		opType OperationType,
+		executionTime int,
 	) error
 	GetOperationExecutionTime(
 		ctx context.Context,

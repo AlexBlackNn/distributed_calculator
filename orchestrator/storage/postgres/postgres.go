@@ -111,26 +111,32 @@ func (s *Storage) GetOperationById(
 	return foundOperation, nil
 }
 
-// change to update
-func (s *Storage) SaveOperationExecutionTime(
+func (s *Storage) UpdateSettingsExecutionTime(
 	ctx context.Context,
-	settings models.Settings,
+	opType storage.OperationType,
+	executionTime int,
 ) error {
-	query := "INSERT INTO settings(id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time ) VALUES($1, $2)"
-	_, err := s.db.ExecContext(
-		ctx,
-		query,
-		settings.Id,
-		settings.PlusOperationExecutionTime,
-		settings.MinusOperationExecutionTime,
-		settings.MultiplicationExecutionTime,
-		settings.DivisionExecutionTime,
-	)
+
+	var fieldName string
+	switch opType {
+	case storage.PlusOperation:
+		fieldName = "plus_operation_execution_time"
+	case storage.MinusOperation:
+		fieldName = "minus_operation_execution_time"
+	case storage.MultiplicationOperation:
+		fieldName = "multiplication_operation_execution_time"
+	case storage.DivisionOperation:
+		fieldName = "division_operation_execution_time"
+	default:
+		//TODO: use storage errors
+		return errors.New("Unknown operation type")
+	}
+	fmt.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
+	query := fmt.Sprintf("UPDATE settings SET %s = $1 WHERE id = 1;", fieldName)
+	_, err := s.db.ExecContext(ctx, query, executionTime)
 	if err != nil {
-		return fmt.Errorf(
-			"DATA LAYER: storage.postgres.SaveOperation: couldn't save user  %w",
-			err,
-		)
+		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", err)
+		return fmt.Errorf("DATA LAYER: storage.postgres.UpdateSettingsExecutionTime: couldn't update %s operation execution time %w", fieldName, err)
 	}
 	return nil
 }
@@ -139,7 +145,7 @@ func (s *Storage) GetOperationExecutionTime(
 	ctx context.Context,
 ) (models.Settings, error) {
 
-	query := "SELECT id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings WHERE (id = 1);"
+	query := "SELECT id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings_service WHERE (id = 1);"
 	row := s.db.QueryRowContext(ctx, query)
 
 	var foundSettings models.Settings

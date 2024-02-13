@@ -1,8 +1,9 @@
-package execution_time_plus
+package execution_time
 
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -14,7 +15,8 @@ import (
 )
 
 type Request struct {
-	ExecutionTime int `json:"execution_time" validate:"required"`
+	ExecutionTime int    `json:"execution_time" validate:"required"`
+	OperationType string `json:"operation_type" validate:"required"`
 }
 
 type Response struct {
@@ -29,15 +31,15 @@ type Response struct {
 // @Produce json
 // @Param body body Request true "Запрос на создание выражения"
 // @Success 201 {object} Response
-// @Router /settings/plus-execution-time [post]
+// @Router /settings/execution-time [post]
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		logger := log.With(
-			slog.String("op", "handlers.settings.execution_time.New"),
+			slog.String("op", "handlers.settings_service.execution_time.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-
+		fmt.Println("11111111111111111111111111111111111111")
 		var req Request
 
 		err := render.DecodeJSON(r.Body, &req)
@@ -66,7 +68,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			return
 		}
 
-		err = application.SettingService.PlusExecutionTime(ctx, req.ExecutionTime)
+		err = application.SettingService.UpdateSettingsExecutionTime(ctx, req.OperationType, req.ExecutionTime)
 		if err != nil {
 			logger.Error("invalid request", err.Error())
 			render.Status(r, http.StatusInternalServerError)
