@@ -69,6 +69,9 @@ func (os *OrchestratorService) CalculationRequest(
 	}
 
 	execTimeModel, err := os.settingsStorage.GetOperationExecutionTime(ctx)
+
+	fmt.Println("11111111111111", execTimeModel)
+	fmt.Println("2222222222", err)
 	execTime := message_broker.ExectutionTime{
 		PlusOperationExecutionTime:           execTimeModel.PlusOperationExecutionTime,
 		MinusOperationExecutionTime:          execTimeModel.MinusOperationExecutionTime,
@@ -151,7 +154,7 @@ func (os *OrchestratorService) CalculationResult(
 	if nil == operationInDb.Result {
 		// TODO: create as errors of service layer
 
-		return 0, fmt.Errorf("Not Ready")
+		return 0, ErrOperationNotProcessed
 	}
 	if operationInDb.Status == "Error" {
 		// TODO: New error

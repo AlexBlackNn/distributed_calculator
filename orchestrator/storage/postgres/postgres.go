@@ -35,8 +35,8 @@ func (s *Storage) SaveOperation(
 	operation models.Operation,
 	value any,
 ) error {
-	query := "INSERT INTO operations(uid, operation, result, created_at) VALUES($1, $2, $3, $4)"
-	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation, value, time.Now())
+	query := "INSERT INTO operations(uid, operation, result, status, created_at) VALUES($1, $2, $3, $4, $5)"
+	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation, value, "process", time.Now())
 	if err != nil {
 		return fmt.Errorf(
 			"DATA LAYER: storage.postgres.SaveOperation: couldn't save Operation  %w",
@@ -145,7 +145,7 @@ func (s *Storage) GetOperationExecutionTime(
 	ctx context.Context,
 ) (models.Settings, error) {
 
-	query := "SELECT id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings_service WHERE (id = 1);"
+	query := "SELECT id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings WHERE (id = 1);"
 	row := s.db.QueryRowContext(ctx, query)
 
 	var foundSettings models.Settings
