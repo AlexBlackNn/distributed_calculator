@@ -49,7 +49,7 @@ func (ss *SettingsService) UpdateSettingsExecutionTime(
 		//TODO: use storage errors
 		return errors.New("Unknown operation type")
 	}
-	fmt.Print("dddddddddddddddddddddddddddddddd")
+	fmt.Println("dddddddddddddddddddddddddddddddd")
 	log := ss.log.With(
 		slog.String("info", "SERVICE LAYER: settings_service.PlusExecutionTime"),
 	)

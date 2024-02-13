@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"orchestrator/internal/app"
 	"orchestrator/internal/lib/api/response"
+	"orchestrator/internal/services/settings_service"
 )
 
 type Request struct {
@@ -70,9 +71,16 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 
 		err = application.SettingService.UpdateSettingsExecutionTime(ctx, req.OperationType, req.ExecutionTime)
 		if err != nil {
-			logger.Error("invalid request", err.Error())
+			if errors.Is(err, settings_service.ErrValidationOperationTime) {
+				logger.Info("validation of execution operation time failed", err.Error())
+				render.Status(r, http.StatusBadRequest)
+				render.JSON(w, r, response.Error("Invalid execution time"))
+				return
+			}
+			logger.Error("internal error", err.Error())
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, response.Error("Internal Error"))
+			return
 		}
 		logger.Info("expression calculating", slog.Int("expression", req.ExecutionTime))
 

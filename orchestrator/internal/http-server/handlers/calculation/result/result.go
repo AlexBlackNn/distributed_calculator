@@ -24,7 +24,7 @@ type Response struct {
 // @Tags Calculations
 // @Accept json
 // @Produce json
-// @Param uid path string true "Идентификатор результата"
+// @Param uuid path string true "Идентификатор результата"
 // @Success 200 {object} Response
 // @Router /expression/{uuid} [get]
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
@@ -36,7 +36,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 		)
 
 		currentUuid := chi.URLParam(r, "uuid")
-
+		print("111111111111111111111111", currentUuid)
 		if !IsValidUUID(currentUuid) {
 			log.Info("currentUuid", currentUuid)
 			render.Status(r, http.StatusBadRequest)

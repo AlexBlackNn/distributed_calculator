@@ -73,7 +73,7 @@ const docTemplate = `{
                     {
                         "type": "string",
                         "description": "Идентификатор результата",
-                        "name": "uid",
+                        "name": "uuid",
                         "in": "path",
                         "required": true
                     }

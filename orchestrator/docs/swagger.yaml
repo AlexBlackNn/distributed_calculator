@@ -97,7 +97,7 @@ paths:
       parameters:
       - description: Идентификатор результата
         in: path
-        name: uid
+        name: uuid
         required: true
         type: string
       produces:

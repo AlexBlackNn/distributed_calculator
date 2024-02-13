@@ -136,7 +136,7 @@ func (os *OrchestratorService) CalculationResult(
 	log := os.log.With(
 		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationResult"),
 	)
-
+	print("111111111111111111111111")
 	log.Info("check if operation was calculated")
 
 	operationInDb, err := os.operationStorage.GetOperationById(ctx, id)
