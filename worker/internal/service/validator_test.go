@@ -22,13 +22,13 @@ func TestValidOperation(t *testing.T) {
 		{"0-2", true},
 		{"0+2", true},
 	}
-
+	validator := Validator{}
 	for _, test := range tests {
 		name := fmt.Sprintf("case(%v,%v)", test.expression, test.result)
+
 		t.Run(name, func(t *testing.T) {
 
-			result := VerifyExpression(test.expression)
-
+			result := validator.VerifyExpression(test.expression)
 			if result != test.result {
 				t.Errorf("got %v, want %v", result, test.result)
 			}
@@ -53,13 +53,12 @@ func TestBadOperation(t *testing.T) {
 		{"0)-2", false},
 		{"0+(2", false},
 	}
-
+	validator := Validator{}
 	for _, test := range tests {
 		name := fmt.Sprintf("case(%v,%v)", test.expression, test.result)
 		t.Run(name, func(t *testing.T) {
 
-			result := VerifyExpression(test.expression)
-
+			result := validator.VerifyExpression(test.expression)
 			if result != test.result {
 				t.Errorf("got %v, want %v", result, test.result)
 			}

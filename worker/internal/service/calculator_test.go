@@ -29,8 +29,10 @@ func TestCalculatorOperation(t *testing.T) {
 		calculator := New()
 		t.Run(name, func(t *testing.T) {
 			requestMessage := transport.RequestMessage{Id: "1231", Operation: test.expression}
-			result := calculator.Start(requestMessage)
-
+			result, err := calculator.Start(requestMessage)
+			if err != nil {
+				t.Errorf("got %v, want %v", result, test.result)
+			}
 			if result != test.result {
 				t.Errorf("got %v, want %v", result, test.result)
 			}
