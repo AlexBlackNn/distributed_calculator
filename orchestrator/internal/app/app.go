@@ -5,6 +5,7 @@ import (
 	"orchestrator/internal/config"
 	"orchestrator/internal/services/monitoring_service"
 	"orchestrator/internal/services/orchestrator_service"
+	settings_service "orchestrator/internal/services/settings"
 	"orchestrator/message_broker/rabbit"
 	"orchestrator/storage/postgres"
 	"orchestrator/storage/redis"
@@ -14,6 +15,7 @@ import (
 type App struct {
 	OrchestrationService *orchestrator_service.OrchestratorService
 	MonitoringService    *monitoring_service.MonitoringService
+	SettingService       *settings_service.SettingsService
 }
 
 func New(
@@ -47,13 +49,18 @@ func New(
 		cfg,
 	)
 
+	settingService := settings_service.New(
+		log,
+		operationSettingsStorage,
+		cfg,
+	)
 	return &App{
 		OrchestrationService: orchestrationService,
 		MonitoringService:    monitoringService,
+		SettingService:       settingService,
 	}
 }
 
-//
 //func main() {
 //	ctx := context.Background()
 //

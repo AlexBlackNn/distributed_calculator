@@ -13,6 +13,7 @@ import (
 	"orchestrator/internal/http-server/handlers/calculation/expression"
 	"orchestrator/internal/http-server/handlers/calculation/result"
 	"orchestrator/internal/http-server/handlers/monitoring/worker"
+	"orchestrator/internal/http-server/handlers/settings/execution_time_plus"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
 	"os"
 	"os/signal"
@@ -67,6 +68,10 @@ func main() {
 	})
 	router.Route("/monitoring", func(r chi.Router) {
 		r.Get("/worker", worker.New(log, application))
+	})
+
+	router.Route("/settings", func(r chi.Router) {
+		r.Post("/plus-execution-time", execution_time_plus.New(log, application))
 	})
 
 	// graceful stop

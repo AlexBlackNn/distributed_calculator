@@ -1,4 +1,18 @@
 definitions:
+  execution_time_plus.Request:
+    properties:
+      execution_time:
+        type: integer
+    required:
+    - execution_time
+    type: object
+  execution_time_plus.Response:
+    properties:
+      id:
+        type: string
+      response:
+        $ref: '#/definitions/response.Response'
+    type: object
   expression.Request:
     properties:
       expression:
@@ -72,7 +86,7 @@ paths:
       summary: Создание нового выражения
       tags:
       - Calculations
-  /expression/{uid}:
+  /expression/{uuid}:
     get:
       consumes:
       - application/json
@@ -108,4 +122,26 @@ paths:
       summary: Получение количества активных воркеров
       tags:
       - Monitoring
+  /settings/plus-execution-time:
+    post:
+      consumes:
+      - application/json
+      description: Создает новое выражение на сервере
+      parameters:
+      - description: Запрос на создание выражения
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/execution_time_plus.Request'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/execution_time_plus.Response'
+      summary: Создание нового выражения
+      tags:
+      - Settings
 swagger: "2.0"

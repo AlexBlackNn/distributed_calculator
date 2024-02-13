@@ -56,7 +56,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/expression/{uid}": {
+        "/expression/{uuid}": {
             "get": {
                 "description": "Получает результат по указанному идентификатору из хранилища",
                 "consumes": [
@@ -110,9 +110,65 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/settings/plus-execution-time": {
+            "post": {
+                "description": "Создает новое выражение на сервере",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Settings"
+                ],
+                "summary": "Создание нового выражения",
+                "parameters": [
+                    {
+                        "description": "Запрос на создание выражения",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/execution_time_plus.Request"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/execution_time_plus.Response"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "execution_time_plus.Request": {
+            "type": "object",
+            "required": [
+                "execution_time"
+            ],
+            "properties": {
+                "execution_time": {
+                    "type": "integer"
+                }
+            }
+        },
+        "execution_time_plus.Response": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
+        },
         "expression.Request": {
             "type": "object",
             "required": [

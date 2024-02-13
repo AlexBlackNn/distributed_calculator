@@ -13,7 +13,7 @@ type Response struct {
 }
 
 const (
-	StatusOK        = "Started"
+	StatusOK        = "Ok"
 	StatusInProcess = "InProcess "
 	StatusError     = "Error"
 	StatusResult    = "Result"
