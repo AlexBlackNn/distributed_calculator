@@ -21,22 +21,13 @@ import (
 	"time"
 )
 
-// @title           Swagger Example API
+// @title           Swagger API
 // @version         1.0
-// @description     This is a sample server celler server.
-// @termsOfService  http://swagger.io/terms/
-
+// @description     This is a distributed calculation server.
 // @contact.name   API Support
-// @contact.calculation    http://www.swagger.io/support
-// @contact.email  support@swagger.io
-
 // @license.name  Apache 2.0
 // @license.calculation   http://www.apache.org/licenses/LICENSE-2.0.html
-
 // @host      localhost:8080
-
-// @externalDocs.description  OpenAPI
-// @externalDocs.calculation          https://swagger.io/resources/open-api/
 //
 //go:generate go run github.com/swaggo/swag/cmd/swag init
 func main() {
@@ -63,7 +54,7 @@ func main() {
 	})
 	router.Route("/", func(r chi.Router) {
 		r.Get("/swagger/*", httpSwagger.Handler(
-			httpSwagger.URL("http://localhost:8080/swagger/doc.json"), //The calculation pointing to API definition
+			httpSwagger.URL("http://localhost:8080/swagger/doc.json"),
 		))
 	})
 	router.Route("/monitoring", func(r chi.Router) {

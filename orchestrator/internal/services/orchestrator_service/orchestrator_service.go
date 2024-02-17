@@ -17,34 +17,28 @@ type OrchestratorService struct {
 	// data layer
 	operationStorage storage.OperationStorageInterface
 	settingsStorage  storage.SettingsStorageInterface
-	// data layer
-	operationCache storage.OperationCacheInterface
-	messageBroker  message_broker.MessageBrokerInterface
-	cfg            *config.Config
+	messageBroker    message_broker.MessageBrokerInterface
+	cfg              *config.Config
 }
 
-// New returns a new instance of Auth orchestrator_service
+// New returns a new instance of orchestrator service
 func New(
 	log *slog.Logger,
-	// data layer
 	operationStorage storage.OperationStorageInterface,
 	settingsStorage storage.SettingsStorageInterface,
-	operationCache storage.OperationCacheInterface,
-	// broker
 	messageBroker message_broker.MessageBrokerInterface,
-
 	cfg *config.Config,
 ) *OrchestratorService {
 	return &OrchestratorService{
 		log:              log,
 		operationStorage: operationStorage,
 		settingsStorage:  settingsStorage,
-		operationCache:   operationCache,
 		messageBroker:    messageBroker,
 		cfg:              cfg,
 	}
 }
 
+// CalculationRequest starts calculation, sending data to message broker
 func (os *OrchestratorService) CalculationRequest(
 	ctx context.Context,
 	operation string,
@@ -52,62 +46,66 @@ func (os *OrchestratorService) CalculationRequest(
 	log := os.log.With(
 		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationRequest"),
 	)
-
 	log.Info("check if operation was calculated")
-	operationInCache, err := os.operationCache.GetOperation(ctx, operation)
-	if err != nil {
-		fmt.Println(err)
-	}
-	fmt.Println(operationInCache)
 	operationInDb, err := os.operationStorage.GetOperation(ctx, operation)
 	if err != nil {
-		fmt.Println("database Error", err)
+		if !errors.Is(err, storage.ErrOperationNotFound) {
+			log.Error("operationStorage.GetOperation can't get operation")
+			return "0", InternalError
+		}
 	}
-	// if found that operation is in progress (result is nil) returns saved id
-	if operationInDb.Operation != "" {
+	// if found that operation is in progress returns saved id
+	if operationInDb.Status == "process" {
+		log.Info("operation is being processed")
 		return operationInDb.Id, nil
 	}
-
-	execTimeModel, err := os.settingsStorage.GetOperationExecutionTime(ctx)
-
-	fmt.Println("11111111111111", execTimeModel)
-	fmt.Println("2222222222", err)
-	execTime := message_broker.ExectutionTime{
-		PlusOperationExecutionTime:           execTimeModel.PlusOperationExecutionTime,
-		MinusOperationExecutionTime:          execTimeModel.MinusOperationExecutionTime,
-		MultiplicationOperationExecutionTime: execTimeModel.MultiplicationExecutionTime,
-		DivisionOperationExecutionTime:       execTimeModel.DivisionExecutionTime,
+	log.Info("no operation in storage")
+	log.Info("getting operation execution time from storage")
+	execTime, err := os.settingsStorage.GetOperationExecutionTime(ctx)
+	if err != nil {
+		log.Error("can't get operation execution time from storage")
+		return "0", InternalError
 	}
-
+	log.Info("create message to worker")
 	uid := uuid.New().String()
 	message := message_broker.RequestMessage{
 		Id:                    uid,
 		MessageExectutionTime: execTime,
 		Operation:             operation,
 	}
-
-	os.messageBroker.Send(ctx, message)
-
+	err = os.messageBroker.Send(ctx, message)
+	if err != nil {
+		log.Error("can't send data to message broker")
+		return "0", InternalError
+	}
+	log.Info("save operation into storage")
 	operationModel := models.Operation{
 		Id:        uid,
 		Operation: operation,
 	}
-
-	os.operationStorage.SaveOperation(ctx, operationModel, nil)
+	err = os.operationStorage.SaveOperation(ctx, operationModel, nil)
+	if err != nil {
+		log.Error("can't save operation to storage")
+		return "0", InternalError
+	}
 	return uid, nil
 }
 
+// ParseResponse parses messages from message broker and write results to Storage
 func (os *OrchestratorService) ParseResponse(
 	ctx context.Context,
 ) {
-	// should return channel and using the channgel we need to write to postgres results
-	fmt.Println("receiver")
+	log := os.log.With(
+		slog.String("info", "SERVICE LAYER: orchestrator_service.ParseResponse"),
+	)
+	log.Info("message broker receiver starts")
+
 	result, err := os.messageBroker.Receive()
 	if err != nil {
-		fmt.Println("+++++++++++++++", err)
+		log.Error("can't receive message ")
 	}
 	for msg := range result {
-		fmt.Println("====================>>>>", msg)
+		log.Info("message received")
 		var opr models.Operation
 		if msg.Err != "" {
 			opr = models.Operation{
@@ -115,19 +113,19 @@ func (os *OrchestratorService) ParseResponse(
 				Result: msg.Value,
 				Status: "Error",
 			}
-			fmt.Println("===========1111111=========>>>>", opr)
+			log.Warn("status error in expression detected")
 		} else {
 			opr = models.Operation{
 				Id:     msg.Id,
 				Result: msg.Value,
 				Status: "success",
 			}
-			fmt.Println("===========2222222=========>>>>", opr)
+			log.Info("status success in expression detected")
 		}
 
-		err := os.operationStorage.UpdateOperation(ctx, opr)
+		err = os.operationStorage.UpdateOperation(ctx, opr)
 		if err != nil {
-			fmt.Println(err)
+			log.Error("can't write status operation into storage: %v", err)
 		}
 	}
 }
@@ -139,9 +137,7 @@ func (os *OrchestratorService) CalculationResult(
 	log := os.log.With(
 		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationResult"),
 	)
-	print("111111111111111111111111")
 	log.Info("check if operation was calculated")
-
 	operationInDb, err := os.operationStorage.GetOperationById(ctx, id)
 	if err != nil {
 		if errors.Is(err, storage.ErrOperationNotFound) {
@@ -149,18 +145,14 @@ func (os *OrchestratorService) CalculationResult(
 		}
 		return 0, fmt.Errorf("SERVICE LAYER: orchestrator_service.CalculationResult: %w", err)
 	}
-	// if found that operation is in progress (result is nil) returns saved id
-	// TODO: NEED TO CHECK and FIX
-	if nil == operationInDb.Result {
-		// TODO: create as errors of service layer
 
+	if operationInDb.Status == "process" {
+		log.Info("expression is in process")
 		return 0, ErrOperationNotProcessed
 	}
 	if operationInDb.Status == "Error" {
-		// TODO: New error
-		fmt.Println("=====))))))))))))))))))))))++++++++++++> ERROR")
+		log.Warn("status error in expression detected")
 		return 0, ErrFailedOperation
 	}
-	//TODO: create if it valid
 	return operationInDb.Result.(float64), nil
 }

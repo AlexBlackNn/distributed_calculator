@@ -1,15 +1,10 @@
 package message_broker
 
-type ExectutionTime struct {
-	PlusOperationExecutionTime           int
-	MinusOperationExecutionTime          int
-	MultiplicationOperationExecutionTime int
-	DivisionOperationExecutionTime       int
-}
+import "orchestrator/internal/domain/models"
 
 type RequestMessage struct {
 	Id                    string
-	MessageExectutionTime ExectutionTime
+	MessageExectutionTime models.Settings
 	Operation             string
 }
 

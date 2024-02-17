@@ -145,12 +145,11 @@ func (s *Storage) GetOperationExecutionTime(
 	ctx context.Context,
 ) (models.Settings, error) {
 
-	query := "SELECT id, plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings WHERE (id = 1);"
+	query := "SELECT plus_operation_execution_time, minus_operation_execution_time, multiplication_operation_execution_time, division_operation_execution_time FROM settings WHERE (id = 1);"
 	row := s.db.QueryRowContext(ctx, query)
 
 	var foundSettings models.Settings
 	err := row.Scan(
-		&foundSettings.Id,
 		&foundSettings.PlusOperationExecutionTime,
 		&foundSettings.MinusOperationExecutionTime,
 		&foundSettings.MultiplicationExecutionTime,

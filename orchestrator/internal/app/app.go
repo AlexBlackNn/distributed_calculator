@@ -5,10 +5,9 @@ import (
 	"orchestrator/internal/config"
 	"orchestrator/internal/services/monitoring_service"
 	"orchestrator/internal/services/orchestrator_service"
-	settings_service "orchestrator/internal/services/settings_service"
+	"orchestrator/internal/services/settings_service"
 	"orchestrator/message_broker/rabbit"
 	"orchestrator/storage/postgres"
-	"orchestrator/storage/redis"
 	"os"
 )
 
@@ -22,14 +21,14 @@ func New(
 	log *slog.Logger,
 	cfg *config.Config,
 ) *App {
+
 	//init storage
 	operationSettingsStorage, err := postgres.New(cfg.StoragePath)
 	if err != nil {
 		panic(err)
 	}
-	//init cache
-	operationCache := redis.New(cfg)
 
+	// init message broker
 	messageBroker, err := rabbit.New("test")
 	if err != nil {
 		panic(err)
@@ -39,7 +38,6 @@ func New(
 		log,
 		operationSettingsStorage,
 		operationSettingsStorage,
-		operationCache,
 		messageBroker,
 		cfg,
 	)

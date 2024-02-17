@@ -53,18 +53,14 @@ definitions:
       response:
         $ref: '#/definitions/response.Response'
     type: object
-externalDocs:
-  description: OpenAPI
 host: localhost:8080
 info:
   contact:
-    email: support@swagger.io
     name: API Support
-  description: This is a sample server celler server.
+  description: This is a distributed calculation server.
   license:
     name: Apache 2.0
-  termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  title: Swagger API
   version: "1.0"
 paths:
   /expression:
