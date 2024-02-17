@@ -131,11 +131,9 @@ func (s *Storage) UpdateSettingsExecutionTime(
 		//TODO: use storage errors
 		return errors.New("Unknown operation type")
 	}
-	fmt.Println("bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb")
 	query := fmt.Sprintf("UPDATE settings SET %s = $1 WHERE id = 1;", fieldName)
 	_, err := s.db.ExecContext(ctx, query, executionTime)
 	if err != nil {
-		fmt.Println("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa", err)
 		return fmt.Errorf("DATA LAYER: storage.postgres.UpdateSettingsExecutionTime: couldn't update %s operation execution time %w", fieldName, err)
 	}
 	return nil

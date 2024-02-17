@@ -70,7 +70,7 @@ func main() {
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)
 
 	srv := &http.Server{
-		Addr:         "localhost:8080",
+		Addr:         "0.0.0.0:8080",
 		Handler:      router,
 		ReadTimeout:  time.Duration(10 * time.Second),
 		WriteTimeout: time.Duration(10 * time.Second),

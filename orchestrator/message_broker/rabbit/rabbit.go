@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"orchestrator/internal/config"
 	"time"
 
 	amqp "github.com/rabbitmq/amqp091-go"
@@ -17,8 +18,8 @@ type MessageBroker struct {
 	queue      amqp.Queue
 }
 
-func New(brokerPath string) (*MessageBroker, error) {
-	connection, err := amqp.Dial("amqp://guest:guest@localhost:5672/")
+func New(cfg *config.Config) (*MessageBroker, error) {
+	connection, err := amqp.Dial(cfg.RabbitAmqp)
 	if err != nil {
 		return nil, fmt.Errorf(
 			"BROKER LAYER: broker.rabbit.New: couldn't open a broker: %w",

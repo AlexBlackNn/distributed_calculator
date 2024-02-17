@@ -29,7 +29,7 @@ func New(
 	}
 
 	// init message broker
-	messageBroker, err := rabbit.New("test")
+	messageBroker, err := rabbit.New(cfg)
 	if err != nil {
 		panic(err)
 	}
@@ -58,64 +58,6 @@ func New(
 		SettingService:       settingService,
 	}
 }
-
-//func main() {
-//	ctx := context.Background()
-//
-//	cfg := config.MustLoad()
-//	// init logger
-//	log := setupLogger(cfg.Env)
-//	log.Info("starting application", slog.String("env", cfg.Env))
-//
-//	application := New(log, cfg)
-//
-//	fmt.Println("_______________________________________________________")
-//	calculation := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
-//
-//	// Send a GET request to the RabbitMQ Management API to get queue details
-//	resp, err := grequests.Get(calculation, nil)
-//	if err != nil {
-//		fmt.Println("Error:", err)
-//		return
-//	}
-//
-//	var data map[string]interface{}
-//	resp.JSON(&data)
-//
-//	if consumers, ok := data["consumers"].(float64); ok {
-//		fmt.Println("Number of consumers connected to the queue:", consumers)
-//	} else {
-//		fmt.Println("Consumers information not available for this queue.")
-//	}
-//	fmt.Println("_______________________________________________________")
-//	fmt.Println("*******************************************************")
-//
-//	id1, err := application.orchestrationService.CalculationRequest(ctx, "1*(1+(3*5))")
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	fmt.Println(">>>>>>>>>>>>> id1: ", id1)
-//
-//	go application.orchestrationService.ParseResponse(ctx)
-//	id2, err := application.orchestrationService.CalculationRequest(ctx, "1*2+4/2")
-//	fmt.Println(">>>>>>>>>>>>> id2: ", id1)
-//
-//	fmt.Println("*******************************************************")
-//
-//	time.Sleep(10 * time.Second)
-//	fmt.Println("_______________________________________________________")
-//	result1, err := application.orchestrationService.CalculationResult(ctx, id1)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	fmt.Println(">>>>>>>>>>>>> result1: ", result1)
-//	result2, err := application.orchestrationService.CalculationResult(ctx, id2)
-//	if err != nil {
-//		fmt.Println(err)
-//	}
-//	fmt.Println(">>>>>>>>>>>>> result2: ", result2)
-//	fmt.Println("_______________________________________________________")
-//}
 
 const (
 	envLocal = "local"

@@ -11,6 +11,7 @@ type Config struct {
 	RedisAddress    string `yaml:"redis_address"`
 	StoragePath     string `yaml:"storage_path"`
 	RabbitUrlWorker string `yaml:"rabbit_url_worker"`
+	RabbitAmqp      string `yaml:"rabbit_amqp"`
 }
 
 func MustLoad() *Config {

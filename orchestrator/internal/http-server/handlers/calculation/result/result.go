@@ -3,7 +3,6 @@ package result
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
@@ -37,7 +36,6 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 		)
 
 		currentUuid := chi.URLParam(r, "uuid")
-		print("111111111111111111111111", currentUuid)
 		if !IsValidUUID(currentUuid) {
 			log.Info("currentUuid", currentUuid)
 			render.Status(r, http.StatusBadRequest)
@@ -45,11 +43,9 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			return
 		}
 		result, err := application.OrchestrationService.CalculationResult(ctx, currentUuid)
-		fmt.Println("3333333333333333333333", err)
 		if err != nil {
 
 			if errors.Is(err, orchestrator_service.ErrOperationNotProcessed) {
-				fmt.Println("44444444444444444", err)
 				render.Status(r, http.StatusOK)
 				responseInProcess(w, r, currentUuid)
 				return
