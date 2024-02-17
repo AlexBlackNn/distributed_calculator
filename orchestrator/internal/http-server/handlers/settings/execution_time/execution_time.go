@@ -3,10 +3,10 @@ package execution_time
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"io"
 	"log/slog"
 	"net/http"
@@ -16,8 +16,8 @@ import (
 )
 
 type Request struct {
-	ExecutionTime int    `json:"execution_time" validate:"required"`
-	OperationType string `json:"operation_type" validate:"required"`
+	ExecutionTime int    `json:"execution_time" validate:"required" example:"1"`
+	OperationType string `json:"operation_type" validate:"required,eq=plus|eq=minus|eq=mult|eq=div" example:"plus"`
 }
 
 type Response struct {
@@ -25,12 +25,12 @@ type Response struct {
 	Response response.Response `json:"response"`
 }
 
-// @Summary Создание нового выражения
-// @Description Создает новое выражение на сервере
+// @Summary Установка нового времени выполнения
+// @Description operation_type: minus, plus, mult, div. execution_time > 0
 // @Tags Settings
 // @Accept json
 // @Produce json
-// @Param body body Request true "Запрос на создание выражения"
+// @Param body body Request true "Установка времени выполнения"
 // @Success 201 {object} Response
 // @Router /settings/execution-time [post]
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
@@ -40,13 +40,9 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			slog.String("op", "handlers.settings_service.execution_time.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		fmt.Println("11111111111111111111111111111111111111")
 		var req Request
-
 		err := render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
-			// Такую ошибку встретим, если получили запрос с пустым телом.
-			// Обработаем её отдельно
 			logger.Error("request body is empty")
 			render.Status(r, http.StatusBadRequest)
 			render.JSON(w, r, response.Error("empty request"))
@@ -84,8 +80,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 		}
 		logger.Info("expression calculating", slog.Int("expression", req.ExecutionTime))
 
-		//TODO: change id
-		responseOK(w, r, "1")
+		responseOK(w, r, uuid.New().String())
 	}
 }
 

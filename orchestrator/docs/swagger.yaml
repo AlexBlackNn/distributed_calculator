@@ -2,8 +2,10 @@ definitions:
   execution_time.Request:
     properties:
       execution_time:
+        example: 1
         type: integer
       operation_type:
+        example: plus
         type: string
     required:
     - execution_time
@@ -125,9 +127,9 @@ paths:
     post:
       consumes:
       - application/json
-      description: Создает новое выражение на сервере
+      description: 'operation_type: minus, plus, mult, div. execution_time > 0'
       parameters:
-      - description: Запрос на создание выражения
+      - description: Установка времени выполнения
         in: body
         name: body
         required: true
@@ -140,7 +142,7 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/execution_time.Response'
-      summary: Создание нового выражения
+      summary: Установка нового времени выполнения
       tags:
       - Settings
 swagger: "2.0"

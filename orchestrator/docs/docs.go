@@ -111,7 +111,7 @@ const docTemplate = `{
         },
         "/settings/execution-time": {
             "post": {
-                "description": "Создает новое выражение на сервере",
+                "description": "operation_type: minus, plus, mult, div. execution_time \u003e 0",
                 "consumes": [
                     "application/json"
                 ],
@@ -121,10 +121,10 @@ const docTemplate = `{
                 "tags": [
                     "Settings"
                 ],
-                "summary": "Создание нового выражения",
+                "summary": "Установка нового времени выполнения",
                 "parameters": [
                     {
-                        "description": "Запрос на создание выражения",
+                        "description": "Установка времени выполнения",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -153,10 +153,12 @@ const docTemplate = `{
             ],
             "properties": {
                 "execution_time": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 1
                 },
                 "operation_type": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "plus"
                 }
             }
         },
