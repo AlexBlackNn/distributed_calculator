@@ -2,3 +2,4 @@ env: "local" #demo, prod
 storage_path: "postgresql://postgres:postgres@127.0.0.1:5432/postgres"
 redis_address: "localhost:6379" # in case of redis usage insted of redis_sentinel
 jaeger_url: "http://localhost:14268/api/traces"
+rabbit_url_worker : "http://guest:guest@localhost:15672/api/queues/%2f/operation"

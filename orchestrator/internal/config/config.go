@@ -7,9 +7,10 @@ import (
 )
 
 type Config struct {
-	Env          string `yaml:"env" env-default:"local"`
-	RedisAddress string `yaml:"redis_address"`
-	StoragePath  string `yaml:"storage_path"`
+	Env             string `yaml:"env" env-default:"local"`
+	RedisAddress    string `yaml:"redis_address"`
+	StoragePath     string `yaml:"storage_path"`
+	RabbitUrlWorker string `yaml:"rabbit_url_worker"`
 }
 
 func MustLoad() *Config {

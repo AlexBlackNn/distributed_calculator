@@ -8,6 +8,7 @@ import (
 	"log/slog"
 	"net/http"
 	"orchestrator/internal/app"
+	"orchestrator/internal/config"
 	"orchestrator/internal/lib/api/response"
 )
 
@@ -23,14 +24,14 @@ type Response struct {
 // @Produce json
 // @Success 200 {object} Response
 // @Router /monitoring/worker [get]
-func New(log *slog.Logger, application *app.App) http.HandlerFunc {
+func New(log *slog.Logger, application *app.App, cfg *config.Config) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		ctx := context.Background()
 		log := log.With(
 			slog.String("op", "handlers.monitoring.worker.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-		result, err := application.MonitoringService.GetActiveWorkers(ctx)
+		result, err := application.MonitoringService.GetActiveWorkers(ctx, cfg)
 		// TODO: think about this error
 		if err != nil {
 			log.Error("some errors", err.Error())

@@ -2,11 +2,13 @@ package monitoring_service
 
 import (
 	"context"
-	"errors"
-	"github.com/levigross/grequests"
+	"encoding/json"
+	"io"
 	"log/slog"
+	"net/http"
 	"orchestrator/internal/config"
 	"orchestrator/message_broker"
+	"time"
 )
 
 type MonitoringService struct {
@@ -28,21 +30,25 @@ func New(
 
 func (ms *MonitoringService) GetActiveWorkers(
 	ctx context.Context,
+	cfg *config.Config,
 ) (float64, error) {
 	log := ms.log.With(
 		slog.String("info", "SERVICE LAYER: monitoring_service.GetActiveWorkers"),
 	)
-	log.Info("check if operation was calculated")
-	// TODO: get from config
-	rabbitUrl := "http://guest:guest@localhost:15672/api/queues/%2f/operation"
-	// Send a GET request to the RabbitMQ Management API to get queue details
-	//TODO: change for client with timeout
-	resp, err := grequests.Get(rabbitUrl, nil)
+	log.Info("starts getting active workers")
+
+	client := http.Client{Timeout: 3 * time.Second}
+	resp, err := client.Get(cfg.RabbitUrlWorker)
+	if err != nil {
+		return 0, err
+	}
+	defer resp.Body.Close()
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return 0, err
 	}
 	var data map[string]interface{}
-	err = resp.JSON(&data)
+	err = json.Unmarshal(body, &data)
 	if err != nil {
 		return 0, err
 	}
@@ -50,8 +56,7 @@ func (ms *MonitoringService) GetActiveWorkers(
 	if consumers, ok := data["consumers"].(float64); ok {
 		return consumers, nil
 	} else {
-		// TODO: create error for service
-		return 0, errors.New("Consumers information not available for this queue.")
+		return 0, ErrNoWorkerInformation
 	}
 
 }

@@ -58,7 +58,7 @@ func main() {
 		))
 	})
 	router.Route("/monitoring", func(r chi.Router) {
-		r.Get("/worker", worker.New(log, application))
+		r.Get("/worker", worker.New(log, application, cfg))
 	})
 
 	router.Route("/settings", func(r chi.Router) {
