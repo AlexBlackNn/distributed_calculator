@@ -3,7 +3,6 @@ package settings_service
 import (
 	"context"
 	"errors"
-	"fmt"
 	"log/slog"
 	"orchestrator/internal/config"
 	"orchestrator/storage"
@@ -49,7 +48,6 @@ func (ss *SettingsService) UpdateSettingsExecutionTime(
 		//TODO: use storage errors
 		return errors.New("Unknown operation type")
 	}
-	fmt.Println("dddddddddddddddddddddddddddddddd")
 	log := ss.log.With(
 		slog.String("info", "SERVICE LAYER: settings_service.PlusExecutionTime"),
 	)
@@ -59,7 +57,6 @@ func (ss *SettingsService) UpdateSettingsExecutionTime(
 		return ErrValidationOperationTime
 	}
 	log.Info("execution time validation successful")
-	fmt.Print("cccccccccccccccccccccccccccccccccccc")
 	err := ss.settingsStorage.UpdateSettingsExecutionTime(ctx, operatoion, execution_time)
 	if err != nil {
 		log.Info("saving to storage execution time failed")

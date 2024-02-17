@@ -48,47 +48,45 @@ func (os *OrchestratorService) CalculationRequest(
 	)
 	log.Info("check if operation was calculated")
 	operationInDb, err := os.operationStorage.GetOperation(ctx, operation)
+
 	if err != nil {
-		if !errors.Is(err, storage.ErrOperationNotFound) {
-			log.Error("operationStorage.GetOperation can't get operation")
-			return "0", InternalError
+		if errors.Is(err, storage.ErrOperationNotFound) {
+			log.Info("no operation in storage")
+
+			log.Info("getting operation execution time from storage")
+			var execTime models.Settings
+			execTime, err = os.settingsStorage.GetOperationExecutionTime(ctx)
+			if err != nil {
+				log.Error("can't get operation execution time from storage")
+				return "0", InternalError
+			}
+			log.Info("create message to worker")
+			uid := uuid.New().String()
+			message := message_broker.RequestMessage{
+				Id:                    uid,
+				MessageExectutionTime: execTime,
+				Operation:             operation,
+			}
+			err = os.messageBroker.Send(ctx, message)
+			if err != nil {
+				log.Error("can't send data to message broker")
+				return "0", InternalError
+			}
+			log.Info("save operation into storage")
+			operationModel := models.Operation{
+				Id:        uid,
+				Operation: operation,
+			}
+			err = os.operationStorage.SaveOperation(ctx, operationModel, nil)
+			if err != nil {
+				log.Error("can't save operation to storage")
+				return "0", InternalError
+			}
+			return uid, nil
 		}
-	}
-	// if found that operation is in progress returns saved id
-	if operationInDb.Status == "process" {
-		log.Info("operation is being processed")
-		return operationInDb.Id, nil
-	}
-	log.Info("no operation in storage")
-	log.Info("getting operation execution time from storage")
-	execTime, err := os.settingsStorage.GetOperationExecutionTime(ctx)
-	if err != nil {
-		log.Error("can't get operation execution time from storage")
 		return "0", InternalError
 	}
-	log.Info("create message to worker")
-	uid := uuid.New().String()
-	message := message_broker.RequestMessage{
-		Id:                    uid,
-		MessageExectutionTime: execTime,
-		Operation:             operation,
-	}
-	err = os.messageBroker.Send(ctx, message)
-	if err != nil {
-		log.Error("can't send data to message broker")
-		return "0", InternalError
-	}
-	log.Info("save operation into storage")
-	operationModel := models.Operation{
-		Id:        uid,
-		Operation: operation,
-	}
-	err = os.operationStorage.SaveOperation(ctx, operationModel, nil)
-	if err != nil {
-		log.Error("can't save operation to storage")
-		return "0", InternalError
-	}
-	return uid, nil
+	return operationInDb.Id, nil
 }
 
 // ParseResponse parses messages from message broker and write results to Storage
@@ -113,19 +111,19 @@ func (os *OrchestratorService) ParseResponse(
 				Result: msg.Value,
 				Status: "Error",
 			}
-			log.Warn("status error in expression detected")
+			log.Warn("status error in expression detected", "id", msg.Id, "result", msg.Value)
 		} else {
 			opr = models.Operation{
 				Id:     msg.Id,
 				Result: msg.Value,
 				Status: "success",
 			}
-			log.Info("status success in expression detected")
+			log.Info("status success in expression detected", "id", msg.Id, "result", msg.Value)
 		}
 
 		err = os.operationStorage.UpdateOperation(ctx, opr)
 		if err != nil {
-			log.Error("can't write status operation into storage: %v", err)
+			log.Error("can't write status operation into storage", "err", err, "id", msg.Id, "result", msg.Value)
 		}
 	}
 }

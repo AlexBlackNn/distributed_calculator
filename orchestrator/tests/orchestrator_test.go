@@ -42,10 +42,10 @@ func TestWholePathOfCalculation2_HappyPath(t *testing.T) {
 		{"(1+2)*2/3*(1-2)", -2},
 		{"2+(1+2)*2/3*(1-2)", 0},
 		{"2*2/2", 2},
-		{"1", 1},
 		{"-1", -1},
 		{"0-2", -2},
 		{"0+2", 2},
+		{"21", 21},
 	}
 
 	interactor := Interactor{
@@ -60,9 +60,10 @@ func TestWholePathOfCalculation2_HappyPath(t *testing.T) {
 			response := expression.Response{}
 			err := interactor.PostExpression(request, &response)
 			if err != nil {
+				fmt.Println("==>>>", err)
 				t.Errorf(err.Error())
 			}
-			time.Sleep(4 * time.Second)
+			time.Sleep(5 * time.Second)
 			err = interactor.GetResult(&response)
 			if err != nil {
 				t.Errorf(err.Error())
