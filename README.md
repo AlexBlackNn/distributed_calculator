@@ -95,6 +95,11 @@ exit status 2
    
    Мониторинг воркеров сделан с помощью запроса к брокеру сообщений, о подключенных воркерах 
    http://localhost:8080/swagger/index.html#/ /monitoring/worker Получение количества активных воркеров
+   Увеличить количество воркеров.
+   ```bash
+   cd infra
+   docker-compose -f docker-compose.demo.yaml scale worker=2
+   ```   
 
 6. [x] Реализован интерфейс для мориторинга воркеров - 10 баллов
 
