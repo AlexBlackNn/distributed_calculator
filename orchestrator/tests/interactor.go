@@ -3,7 +3,6 @@ package tests
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"orchestrator/internal/http-server/handlers/calculation/expression"
@@ -34,7 +33,6 @@ func (ia *Interactor) PostExpression(
 		return err
 	}
 	err = json.Unmarshal(body, &response)
-	fmt.Println(err)
 	if err != nil {
 		return err
 	}

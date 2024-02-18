@@ -17,7 +17,7 @@ services:
     ports:
       - "5432:5432"
     env_file:
-      - .env-auth
+      - .env
 
   rabbit_mq:
     image: rabbitmq:3.12-management

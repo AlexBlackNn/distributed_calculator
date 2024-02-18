@@ -1,14 +1,5 @@
 version: "3.3"
 services:
-  redis:
-    image: redis:7.2.3
-    ports:
-      - "6379:6379"
-    env_file:
-      - .env-auth
-    volumes:
-      - $HOME/cache-orchestrator_service:/data
-
   db:
     image: postgres:16.1
     volumes:
@@ -16,7 +7,7 @@ services:
     ports:
       - 5432:5432
     env_file:
-      - .env-auth
+      - .env
 
 
   rabbit_mq:
