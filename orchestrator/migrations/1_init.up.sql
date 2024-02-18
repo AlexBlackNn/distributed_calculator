@@ -17,6 +17,6 @@ CREATE TABLE IF NOT EXISTS operations
     calculated_at timestamp
 );
 
-
+CREATE INDEX IF NOT EXISTS operations_creation_date_idx ON operations(created_at);
 
 

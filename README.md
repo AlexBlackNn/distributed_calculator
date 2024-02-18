@@ -57,6 +57,7 @@ docker-compose -f docker-compose.demo.yaml up
 
 Из корня проекта накатываем миграции
 ```bash
+cd orchestrator
 go run ./cmd/migrator/postgres  --migrations-path=./migrations 
 ```
 
@@ -149,3 +150,10 @@ cd orchestrator
 go run ./main.go --config=./config/local.yaml
 ```
 
+Генерация swagger
+```bash
+cd orchestrator
+go generate ./...
+```
+
+[swagger](http://localhost:8080/swagger/index.html#/)

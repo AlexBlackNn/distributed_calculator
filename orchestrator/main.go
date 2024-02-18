@@ -11,6 +11,7 @@ import (
 	"orchestrator/internal/app"
 	"orchestrator/internal/config"
 	"orchestrator/internal/http-server/handlers/calculation/expression"
+	"orchestrator/internal/http-server/handlers/calculation/operations"
 	"orchestrator/internal/http-server/handlers/calculation/result"
 	"orchestrator/internal/http-server/handlers/monitoring/worker"
 	"orchestrator/internal/http-server/handlers/settings/execution_time"
@@ -63,6 +64,10 @@ func main() {
 
 	router.Route("/settings", func(r chi.Router) {
 		r.Post("/execution-time", execution_time.New(log, application))
+	})
+
+	router.Route("/operations", func(r chi.Router) {
+		r.Get("/", operations.GetOperationsWithPaginationHandler(log, application))
 	})
 
 	// graceful stop

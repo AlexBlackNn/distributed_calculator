@@ -61,6 +61,86 @@ func (s *Storage) UpdateOperation(
 	return nil
 }
 
+// GetOperationsPagination медленный поиск по таблице с пагинацией (сканирование всей таблицы)
+func (s *Storage) GetOperationsPagination(
+	ctx context.Context,
+	pageSize int,
+	pageNumber int,
+) ([]models.Operation, error) {
+	var operations []models.Operation
+
+	offset := (pageNumber - 1) * pageSize
+	limit := pageSize
+
+	query := "SELECT uid, operation, result, status, created_at, calculated_at FROM operations ORDER BY created_at DESC OFFSET $1 LIMIT $2"
+	rows, err := s.db.QueryContext(ctx, query, offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: failed to fetch Operations: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var operation models.Operation
+		err := rows.Scan(&operation.Id, &operation.Operation, &operation.Result, &operation.Status, &operation.CreatedAt, &operation.CalculatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: failed to scan row: %w", err)
+		}
+		operations = append(operations, operation)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: error after reading rows: %w", err)
+	}
+
+	return operations, nil
+}
+
+// GetOperationsFastPagination быстрый поиск по таблице с пагинацией, если created_at в индексе
+func (s *Storage) GetOperationsFastPagination(
+	ctx context.Context,
+	pageSize int,
+	cursor string,
+) ([]models.Operation, error) {
+	var operations []models.Operation
+
+	limit := pageSize
+	var query string
+	var args []interface{}
+
+	if cursor == "" {
+		query = "SELECT uid, operation, result, status, created_at, calculated_at FROM operations ORDER BY created_at DESC LIMIT $1"
+		args = []interface{}{limit}
+	} else {
+		query = "SELECT uid, operation, result, status, created_at, calculated_at FROM operations WHERE created_at < $1 ORDER BY created_at DESC LIMIT $2"
+		cursorTime, err := time.Parse(time.RFC3339, cursor)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing cursor time: %w", err)
+		}
+		args = []interface{}{cursorTime, limit}
+	}
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("Error querying database: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var operation models.Operation
+		err := rows.Scan(&operation.Id, &operation.Operation, &operation.Result, &operation.Status, &operation.CreatedAt, &operation.CalculatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("Error scanning row: %w", err)
+		}
+		operations = append(operations, operation)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("Error after reading rows: %w", err)
+	}
+
+	return operations, nil
+}
+
 func (s *Storage) GetOperation(
 	ctx context.Context,
 	operation string,

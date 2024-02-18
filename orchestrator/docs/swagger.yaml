@@ -32,6 +32,13 @@ definitions:
       response:
         $ref: '#/definitions/response.Response'
     type: object
+  operations.Response:
+    properties:
+      id:
+        type: string
+      response:
+        $ref: '#/definitions/response.Response'
+    type: object
   response.Response:
     properties:
       error:
@@ -123,6 +130,35 @@ paths:
       summary: Получение количества активных воркеров
       tags:
       - Monitoring
+  /operations:
+    get:
+      consumes:
+      - application/json
+      description: Переход с 1 страницы на случайную не предусмотрен! Пагинация быстрая
+        с поиском по индексу. В качестве курсора пустое значение для начала, потом
+        скопировать ПОСЛЕДНЮЮ дату ПОЛЯ CreatedAt , например 2024-02-18T16:27:05.271813Z
+      parameters:
+      - default: 2
+        description: Размер страницы
+        in: query
+        name: page_size
+        type: integer
+      - description: Курсор для пагинации
+        in: query
+        name: cursor
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/operations.Response'
+            type: array
+      summary: Получение операций с пагинацией
+      tags:
+      - Operations
   /settings/execution-time:
     post:
       consumes:

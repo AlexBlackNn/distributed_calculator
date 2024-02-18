@@ -154,3 +154,22 @@ func (os *OrchestratorService) CalculationResult(
 	}
 	return operationInDb.Result.(float64), nil
 }
+
+func (os *OrchestratorService) GetOperationsWithPagination(
+	ctx context.Context,
+	pageSize int,
+	cursor string,
+) ([]models.Operation, error) {
+	log := os.log.With(
+		slog.String("info", "SERVICE LAYER: orchestrator_service.GetOperationsWithPagination"),
+	)
+
+	log.Info("Retrieving operations with pagination")
+
+	operations, err := os.operationStorage.GetOperationsFastPagination(ctx, pageSize, cursor)
+	if err != nil {
+		return nil, fmt.Errorf("SERVICE LAYER: orchestrator_service.GetOperationsWithPagination: %w", err)
+	}
+
+	return operations, nil
+}

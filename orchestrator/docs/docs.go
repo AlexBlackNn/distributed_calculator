@@ -109,6 +109,47 @@ const docTemplate = `{
                 }
             }
         },
+        "/operations": {
+            "get": {
+                "description": "Переход с 1 страницы на случайную не предусмотрен! Пагинация быстрая с поиском по индексу. В качестве курсора пустое значение для начала, потом скопировать ПОСЛЕДНЮЮ дату ПОЛЯ CreatedAt , например 2024-02-18T16:27:05.271813Z",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "summary": "Получение операций с пагинацией",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 2,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Курсор для пагинации",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/operations.Response"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/settings/execution-time": {
             "post": {
                 "description": "operation_type: minus, plus, mult, div. execution_time \u003e 0",
@@ -185,6 +226,17 @@ const docTemplate = `{
             }
         },
         "expression.Response": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
+        },
+        "operations.Response": {
             "type": "object",
             "properties": {
                 "id": {
