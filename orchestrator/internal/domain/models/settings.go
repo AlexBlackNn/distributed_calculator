@@ -5,4 +5,5 @@ type Settings struct {
 	MinusOperationExecutionTime int
 	MultiplicationExecutionTime int
 	DivisionExecutionTime       int
+	UserId                      string
 }

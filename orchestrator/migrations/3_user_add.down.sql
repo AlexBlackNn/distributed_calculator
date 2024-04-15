@@ -1,0 +1,3 @@
+DROP TABLE IF EXISTS user;
+ALTER TABLE operations DROP COLUMN user_id;
+ALTER TABLE settings DROP COLUMN user_id;

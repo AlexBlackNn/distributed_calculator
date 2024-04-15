@@ -35,8 +35,12 @@ func (s *Storage) SaveOperation(
 	operation models.Operation,
 	value any,
 ) error {
-	query := "INSERT INTO operations(uid, operation, result, status, created_at) VALUES($1, $2, $3, $4, $5)"
-	_, err := s.db.ExecContext(ctx, query, operation.Id, operation.Operation, value, "process", time.Now())
+
+	user_id := "079986f9-45a9-492a-b16c-307ac30972b4"
+	query := "INSERT INTO operations(uid, operation, result, status, created_at, user_id) VALUES($1, $2, $3, $4, $5, $6)"
+	_, err := s.db.ExecContext(
+		ctx, query, operation.Id, operation.Operation, value, "process", time.Now(), user_id,
+	)
 	if err != nil {
 		return fmt.Errorf(
 			"DATA LAYER: storage.postgres.SaveOperation: couldn't save Operation  %w",

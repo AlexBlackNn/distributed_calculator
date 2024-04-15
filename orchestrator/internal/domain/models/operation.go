@@ -6,5 +6,6 @@ type Operation struct {
 	Result       any
 	Status       string
 	CreatedAt    string
+	UserId       string
 	CalculatedAt any
 }
