@@ -36,10 +36,15 @@ func (s *Storage) SaveOperation(
 	value any,
 ) error {
 
-	user_id := "079986f9-45a9-492a-b16c-307ac30972b4"
+	appUser := models.User{"079986f9-45a9-492a-b16c-307ac30972b4", "Alex"}
+	foundUser, err := s.GetUser(ctx, appUser.Id)
+	if errors.Is(err, storage.ErrUserNotFound) {
+		s.SaveUser(ctx, appUser)
+	}
+
 	query := "INSERT INTO operations(uid, operation, result, status, created_at, user_id) VALUES($1, $2, $3, $4, $5, $6)"
-	_, err := s.db.ExecContext(
-		ctx, query, operation.Id, operation.Operation, value, "process", time.Now(), user_id,
+	_, err = s.db.ExecContext(
+		ctx, query, operation.Id, operation.Operation, value, "process", time.Now(), foundUser.Id,
 	)
 	if err != nil {
 		return fmt.Errorf(
@@ -48,6 +53,43 @@ func (s *Storage) SaveOperation(
 		)
 	}
 	return nil
+}
+
+func (s *Storage) SaveUser(ctx context.Context, user models.User) error {
+	query := "INSERT INTO app_users(uid, user_name) VALUES($1, $2)"
+	_, err := s.db.ExecContext(ctx, query, user.Id, user.Name)
+	if err != nil {
+		return fmt.Errorf(
+			"DATA LAYER: storage.postgres.SaveUser: couldn't save User  %w",
+			err,
+		)
+	}
+	return nil
+}
+
+func (s *Storage) GetUser(
+	ctx context.Context,
+	userId string,
+) (models.User, error) {
+
+	query := "SELECT uid, user_name FROM app_users WHERE (uid = $1);"
+	row := s.db.QueryRowContext(ctx, query, userId)
+
+	var foundUser models.User
+	err := row.Scan(&foundUser.Id, &foundUser.Name)
+	if err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return foundUser, fmt.Errorf(
+				"DATA LAYER: storage.postgres.GetUser: %w",
+				storage.ErrUserNotFound,
+			)
+		}
+		return foundUser, fmt.Errorf(
+			"DATA LAYER: storage.postgres.GetUser: %w",
+			err,
+		)
+	}
+	return foundUser, nil
 }
 
 func (s *Storage) UpdateOperation(
