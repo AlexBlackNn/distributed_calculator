@@ -108,6 +108,40 @@ func (s *Storage) UpdateOperation(
 }
 
 // GetOperationsPagination медленный поиск по таблице с пагинацией (сканирование всей таблицы)
+func (s *Storage) GetOperationsPaginationForUser(
+	ctx context.Context,
+	pageSize int,
+	pageNumber int,
+) ([]models.Operation, error) {
+	var operations []models.Operation
+
+	offset := (pageNumber - 1) * pageSize
+	limit := pageSize
+	userId := "079986f9-45a9-492a-b16c-307ac30972b4"
+	query := "SELECT uid, operation, result, status, created_at, calculated_at FROM operations WHERE user_id = $1 ORDER BY created_at DESC OFFSET $2 LIMIT $3"
+	rows, err := s.db.QueryContext(ctx, query, userId, offset, limit)
+	if err != nil {
+		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperationsPaginationForUser: failed to fetch Operations: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var operation models.Operation
+		err := rows.Scan(&operation.Id, &operation.Operation, &operation.Result, &operation.Status, &operation.CreatedAt, &operation.CalculatedAt, &operation.UserId)
+		if err != nil {
+			return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperationsPaginationForUser: failed to scan row: %w", err)
+		}
+		operations = append(operations, operation)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: error after reading rows: %w", err)
+	}
+
+	return operations, nil
+}
+
+// GetOperationsPagination медленный поиск по таблице с пагинацией (сканирование всей таблицы)
 func (s *Storage) GetOperationsPagination(
 	ctx context.Context,
 	pageSize int,
