@@ -22,6 +22,11 @@ const docTemplate = `{
     "paths": {
         "/expression": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Создает новое выражение на сервере",
                 "consumes": [
                     "application/json"
@@ -282,6 +287,13 @@ const docTemplate = `{
                     "$ref": "#/definitions/response.Response"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

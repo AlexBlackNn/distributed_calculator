@@ -29,6 +29,9 @@ import (
 // @license.name  Apache 2.0
 // @license.calculation   http://www.apache.org/licenses/LICENSE-2.0.html
 // @host      localhost:8080
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 //
 //go:generate go run github.com/swaggo/swag/cmd/swag init
 func main() {

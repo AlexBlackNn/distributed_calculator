@@ -91,6 +91,8 @@ paths:
           description: Created
           schema:
             $ref: '#/definitions/expression.Response'
+      security:
+      - BearerAuth: []
       summary: Создание нового выражения
       tags:
       - Calculations
@@ -181,4 +183,9 @@ paths:
       summary: Установка нового времени выполнения
       tags:
       - Settings
+securityDefinitions:
+  BearerAuth:
+    in: header
+    name: Authorization
+    type: apiKey
 swagger: "2.0"

@@ -3,6 +3,7 @@ package expression
 import (
 	"context"
 	"errors"
+	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -10,6 +11,7 @@ import (
 	"log/slog"
 	"net/http"
 	"orchestrator/internal/app"
+	"orchestrator/internal/http-server/handlers/utils"
 	"orchestrator/internal/lib/api/response"
 )
 
@@ -30,8 +32,13 @@ type Response struct {
 // @Param body body Request true "Запрос на создание выражения"
 // @Success 201 {object} Response
 // @Router /expression [post]
+// @Security BearerAuth
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+
+		name, _ := utils.ParseJWTToken(r)
+		fmt.Print("========================>>>", name)
+
 		ctx := context.Background()
 		log := log.With(
 			slog.String("op", "handlers.calculation.expression.New"),
