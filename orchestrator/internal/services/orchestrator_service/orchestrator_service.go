@@ -77,7 +77,8 @@ func (os *OrchestratorService) CalculationRequest(
 				Id:        uid,
 				Operation: operation,
 			}
-			err = os.operationStorage.SaveOperation(ctx, operationModel, nil)
+			appUser := models.User{"179986f9-45a9-492a-b16c-307ac30972b4", "BLACK"}
+			err = os.operationStorage.SaveOperation(ctx, operationModel, appUser, nil)
 			if err != nil {
 				log.Error("can't save operation to storage")
 				return "0", InternalError

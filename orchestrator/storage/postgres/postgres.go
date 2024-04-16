@@ -33,11 +33,12 @@ func (s *Storage) Stop() error {
 func (s *Storage) SaveOperation(
 	ctx context.Context,
 	operation models.Operation,
+	appUser models.User,
 	value any,
 ) error {
 
-	appUser := models.User{"079986f9-45a9-492a-b16c-307ac30972b4", "Alex"}
 	foundUser, err := s.GetUser(ctx, appUser.Id)
+	// TODO: error handling for save user
 	if errors.Is(err, storage.ErrUserNotFound) {
 		s.SaveUser(ctx, appUser)
 	}

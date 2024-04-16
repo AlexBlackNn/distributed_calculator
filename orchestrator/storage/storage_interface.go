@@ -10,6 +10,7 @@ type OperationStorageInterface interface {
 	SaveOperation(
 		ctx context.Context,
 		operationModel models.Operation,
+		appUser models.User,
 		value any,
 	) error
 	GetOperation(
