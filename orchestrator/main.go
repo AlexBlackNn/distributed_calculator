@@ -13,6 +13,7 @@ import (
 	"orchestrator/internal/http-server/handlers/calculation/expression"
 	"orchestrator/internal/http-server/handlers/calculation/operations"
 	"orchestrator/internal/http-server/handlers/calculation/result"
+	"orchestrator/internal/http-server/handlers/calculation/user_operations"
 	"orchestrator/internal/http-server/handlers/monitoring/worker"
 	"orchestrator/internal/http-server/handlers/settings/execution_time"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
@@ -72,6 +73,7 @@ func main() {
 	})
 
 	router.Route("/operations", func(r chi.Router) {
+		r.Get("/user", user_operations.GetUserOperationsWithPaginationHandler(log, application))
 		r.Get("/", operations.GetOperationsWithPaginationHandler(log, application))
 	})
 

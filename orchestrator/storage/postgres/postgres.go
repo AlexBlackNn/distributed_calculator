@@ -109,40 +109,6 @@ func (s *Storage) UpdateOperation(
 }
 
 // GetOperationsPagination медленный поиск по таблице с пагинацией (сканирование всей таблицы)
-func (s *Storage) GetOperationsPaginationForUser(
-	ctx context.Context,
-	pageSize int,
-	pageNumber int,
-) ([]models.Operation, error) {
-	var operations []models.Operation
-
-	offset := (pageNumber - 1) * pageSize
-	limit := pageSize
-	userId := "079986f9-45a9-492a-b16c-307ac30972b4"
-	query := "SELECT uid, operation, result, status, created_at, calculated_at FROM operations WHERE user_id = $1 ORDER BY created_at DESC OFFSET $2 LIMIT $3"
-	rows, err := s.db.QueryContext(ctx, query, userId, offset, limit)
-	if err != nil {
-		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperationsPaginationForUser: failed to fetch Operations: %w", err)
-	}
-	defer rows.Close()
-
-	for rows.Next() {
-		var operation models.Operation
-		err := rows.Scan(&operation.Id, &operation.Operation, &operation.Result, &operation.Status, &operation.CreatedAt, &operation.CalculatedAt, &operation.UserId)
-		if err != nil {
-			return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperationsPaginationForUser: failed to scan row: %w", err)
-		}
-		operations = append(operations, operation)
-	}
-
-	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: error after reading rows: %w", err)
-	}
-
-	return operations, nil
-}
-
-// GetOperationsPagination медленный поиск по таблице с пагинацией (сканирование всей таблицы)
 func (s *Storage) GetOperationsPagination(
 	ctx context.Context,
 	pageSize int,
@@ -198,6 +164,53 @@ func (s *Storage) GetOperationsFastPagination(
 			return nil, fmt.Errorf("Error parsing cursor time: %w", err)
 		}
 		args = []interface{}{cursorTime, limit}
+	}
+
+	rows, err := s.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("Error querying database: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var operation models.Operation
+		err := rows.Scan(&operation.Id, &operation.Operation, &operation.Result, &operation.Status, &operation.CreatedAt, &operation.CalculatedAt)
+		if err != nil {
+			return nil, fmt.Errorf("Error scanning row: %w", err)
+		}
+		operations = append(operations, operation)
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("Error after reading rows: %w", err)
+	}
+
+	return operations, nil
+}
+
+// GetUserOperationsFastPagination быстрый поиск для пользователя по таблице с пагинацией, если created_at в индексе
+func (s *Storage) GetUserOperationsFastPagination(
+	ctx context.Context,
+	pageSize int,
+	cursor string,
+	appUser models.User,
+) ([]models.Operation, error) {
+	var operations []models.Operation
+
+	limit := pageSize
+	var query string
+	var args []interface{}
+
+	if cursor == "" {
+		query = "SELECT uid, operation, result, status, created_at, calculated_at FROM operations WHERE user_id = $1 ORDER BY created_at DESC LIMIT $2"
+		args = []interface{}{appUser.Id, limit}
+	} else {
+		query = "SELECT uid, operation, result, status, created_at, calculated_at FROM operations WHERE user_id = $1 AND created_at < $2 ORDER BY created_at DESC LIMIT $3"
+		cursorTime, err := time.Parse(time.RFC3339, cursor)
+		if err != nil {
+			return nil, fmt.Errorf("Error parsing cursor time: %w", err)
+		}
+		args = []interface{}{appUser.Id, cursorTime, limit}
 	}
 
 	rows, err := s.db.QueryContext(ctx, query, args...)

@@ -174,3 +174,23 @@ func (os *OrchestratorService) GetOperationsWithPagination(
 
 	return operations, nil
 }
+
+func (os *OrchestratorService) GetUserOperationsWithPagination(
+	ctx context.Context,
+	pageSize int,
+	cursor string,
+	appUser models.User,
+) ([]models.Operation, error) {
+	log := os.log.With(
+		slog.String("info", "SERVICE LAYER: orchestrator_service.GetUserOperationsWithPagination"),
+	)
+
+	log.Info("Retrieving user operations with pagination")
+
+	operations, err := os.operationStorage.GetUserOperationsFastPagination(ctx, pageSize, cursor, appUser)
+	if err != nil {
+		return nil, fmt.Errorf("SERVICE LAYER: orchestrator_service.GetUserOperationsWithPagination: %w", err)
+	}
+
+	return operations, nil
+}
