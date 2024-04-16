@@ -3,7 +3,6 @@ package expression
 import (
 	"context"
 	"errors"
-	"fmt"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/render"
 	"github.com/go-playground/validator/v10"
@@ -11,6 +10,7 @@ import (
 	"log/slog"
 	"net/http"
 	"orchestrator/internal/app"
+	"orchestrator/internal/domain/models"
 	"orchestrator/internal/http-server/handlers/utils"
 	"orchestrator/internal/lib/api/response"
 )
@@ -36,9 +36,13 @@ type Response struct {
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 
-		name, _ := utils.ParseJWTToken(r)
-		fmt.Print("========================>>>", name)
-
+		uid, name, err := utils.ParseJWTToken(r)
+		if err != nil {
+			log.Error("jwt token check failed")
+			render.Status(r, http.StatusUnauthorized)
+			render.JSON(w, r, response.Error("bad jwt token"))
+		}
+		appUser := models.User{uid, name}
 		ctx := context.Background()
 		log := log.With(
 			slog.String("op", "handlers.calculation.expression.New"),
@@ -47,7 +51,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 
 		var req Request
 
-		err := render.DecodeJSON(r.Body, &req)
+		err = render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
 			// Такую ошибку встретим, если получили запрос с пустым телом.
 			// Обработаем её отдельно
@@ -73,7 +77,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			render.JSON(w, r, response.ValidationError(validateErr))
 			return
 		}
-		id, err := application.OrchestrationService.CalculationRequest(ctx, req.Expression)
+		id, err := application.OrchestrationService.CalculationRequest(ctx, req.Expression, appUser)
 		if err != nil {
 			log.Error("invalid request", err.Error())
 			render.Status(r, http.StatusInternalServerError)

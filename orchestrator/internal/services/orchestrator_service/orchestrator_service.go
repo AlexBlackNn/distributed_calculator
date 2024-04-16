@@ -42,6 +42,7 @@ func New(
 func (os *OrchestratorService) CalculationRequest(
 	ctx context.Context,
 	operation string,
+	appUser models.User,
 ) (string, error) {
 	log := os.log.With(
 		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationRequest"),
@@ -77,7 +78,6 @@ func (os *OrchestratorService) CalculationRequest(
 				Id:        uid,
 				Operation: operation,
 			}
-			appUser := models.User{"179986f9-45a9-492a-b16c-307ac30972b4", "BLACK"}
 			err = os.operationStorage.SaveOperation(ctx, operationModel, appUser, nil)
 			if err != nil {
 				log.Error("can't save operation to storage")
