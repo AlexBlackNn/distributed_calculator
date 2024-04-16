@@ -41,6 +41,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			log.Error("jwt token check failed")
 			render.Status(r, http.StatusUnauthorized)
 			render.JSON(w, r, response.Error("bad jwt token"))
+			return
 		}
 		appUser := models.User{uid, name}
 		ctx := context.Background()
@@ -82,6 +83,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			log.Error("invalid request", err.Error())
 			render.Status(r, http.StatusInternalServerError)
 			render.JSON(w, r, response.Error("Internal Error"))
+			return
 		}
 		log.Info("expression calculating", slog.String("expression", req.Expression))
 
