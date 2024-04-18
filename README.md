@@ -163,3 +163,6 @@ go generate ./...
 ```
 
 [swagger](http://localhost:8080/swagger/index.html#/)
+
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imx1bmFyYXRoQHJpcHBpbi5uZXQiLCJleHAiOjE3MTM0Njg2MjYsInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJ1aWQiOjI0fQ.4Z07pCvO6ohZLm6NCJhSoofW453YUHzcSeDwTdQTkb4
