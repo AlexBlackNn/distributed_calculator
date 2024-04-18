@@ -13,6 +13,7 @@ import (
 	"orchestrator/internal/domain/models"
 	"orchestrator/internal/http-server/handlers/utils"
 	"orchestrator/internal/lib/api/response"
+	"strings"
 )
 
 type Request struct {
@@ -35,12 +36,22 @@ type Response struct {
 // @Security BearerAuth
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		var err error
 
-		uid, name, err := utils.ParseJWTToken(r)
-		if err != nil {
+		tokenString := r.Header.Get("Authorization")
+		token := strings.TrimPrefix(tokenString, "Bearer")
+		if !utils.JWTCheck(token) {
 			log.Error("jwt token check failed")
 			render.Status(r, http.StatusUnauthorized)
 			render.JSON(w, r, response.Error("bad jwt token"))
+			return
+		}
+
+		uid, name, err := utils.JWTParse(token)
+		if err != nil {
+			log.Error("jwt parsing failed")
+			render.Status(r, http.StatusUnauthorized)
+			render.JSON(w, r, response.Error("jwt parsing failed"))
 			return
 		}
 		appUser := models.User{uid, name}
