@@ -22,6 +22,11 @@ const docTemplate = `{
     "paths": {
         "/expression": {
             "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
                 "description": "Создает новое выражение на сервере",
                 "consumes": [
                     "application/json"
@@ -150,6 +155,52 @@ const docTemplate = `{
                 }
             }
         },
+        "/operations/user": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Переход с 1 страницы на случайную не предусмотрен! Пагинация быстрая с поиском по индексу. В качестве курсора пустое значение для начала, потом скопировать ПОСЛЕДНЮЮ дату ПОЛЯ CreatedAt , например 2024-02-18T16:27:05.271813Z",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Operations"
+                ],
+                "summary": "Получение операций с пагинацией пользователя",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 2,
+                        "description": "Размер страницы",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Курсор для пагинации",
+                        "name": "cursor",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/user_operations.Response"
+                            }
+                        }
+                    }
+                }
+            }
+        },
         "/settings/execution-time": {
             "post": {
                 "description": "operation_type: minus, plus, mult, div. execution_time \u003e 0",
@@ -272,6 +323,17 @@ const docTemplate = `{
                 }
             }
         },
+        "user_operations.Response": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "response": {
+                    "$ref": "#/definitions/response.Response"
+                }
+            }
+        },
         "worker.Response": {
             "type": "object",
             "properties": {
@@ -282,6 +344,13 @@ const docTemplate = `{
                     "$ref": "#/definitions/response.Response"
                 }
             }
+        }
+    },
+    "securityDefinitions": {
+        "BearerAuth": {
+            "type": "apiKey",
+            "name": "Authorization",
+            "in": "header"
         }
     }
 }`

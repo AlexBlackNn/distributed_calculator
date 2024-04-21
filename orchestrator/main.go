@@ -13,6 +13,7 @@ import (
 	"orchestrator/internal/http-server/handlers/calculation/expression"
 	"orchestrator/internal/http-server/handlers/calculation/operations"
 	"orchestrator/internal/http-server/handlers/calculation/result"
+	"orchestrator/internal/http-server/handlers/calculation/user_operations"
 	"orchestrator/internal/http-server/handlers/monitoring/worker"
 	"orchestrator/internal/http-server/handlers/settings/execution_time"
 	projectLogger "orchestrator/internal/http-server/middleware/logger"
@@ -29,6 +30,9 @@ import (
 // @license.name  Apache 2.0
 // @license.calculation   http://www.apache.org/licenses/LICENSE-2.0.html
 // @host      localhost:8080
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 //
 //go:generate go run github.com/swaggo/swag/cmd/swag init
 func main() {
@@ -69,9 +73,10 @@ func main() {
 	})
 
 	router.Route("/operations", func(r chi.Router) {
+		r.Get("/user", user_operations.GetUserOperationsWithPaginationHandler(log, application))
 		r.Get("/", operations.GetOperationsWithPaginationHandler(log, application))
 	})
-
+	time.Sleep(10 * time.Second)
 	// graceful stop
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

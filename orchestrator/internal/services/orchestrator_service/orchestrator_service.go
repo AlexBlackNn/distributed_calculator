@@ -42,17 +42,16 @@ func New(
 func (os *OrchestratorService) CalculationRequest(
 	ctx context.Context,
 	operation string,
+	appUser models.User,
 ) (string, error) {
 	log := os.log.With(
 		slog.String("info", "SERVICE LAYER: orchestrator_service.CalculationRequest"),
 	)
 	log.Info("check if operation was calculated")
 	operationInDb, err := os.operationStorage.GetOperation(ctx, operation)
-
 	if err != nil {
 		if errors.Is(err, storage.ErrOperationNotFound) {
 			log.Info("no operation in storage")
-
 			log.Info("getting operation execution time from storage")
 			var execTime models.Settings
 			execTime, err = os.settingsStorage.GetOperationExecutionTime(ctx)
@@ -77,7 +76,6 @@ func (os *OrchestratorService) CalculationRequest(
 				Id:        uid,
 				Operation: operation,
 			}
-			appUser := models.User{"179986f9-45a9-492a-b16c-307ac30972b4", "BLACK"}
 			err = os.operationStorage.SaveOperation(ctx, operationModel, appUser, nil)
 			if err != nil {
 				log.Error("can't save operation to storage")
@@ -170,6 +168,26 @@ func (os *OrchestratorService) GetOperationsWithPagination(
 	operations, err := os.operationStorage.GetOperationsFastPagination(ctx, pageSize, cursor)
 	if err != nil {
 		return nil, fmt.Errorf("SERVICE LAYER: orchestrator_service.GetOperationsWithPagination: %w", err)
+	}
+
+	return operations, nil
+}
+
+func (os *OrchestratorService) GetUserOperationsWithPagination(
+	ctx context.Context,
+	pageSize int,
+	cursor string,
+	appUser models.User,
+) ([]models.Operation, error) {
+	log := os.log.With(
+		slog.String("info", "SERVICE LAYER: orchestrator_service.GetUserOperationsWithPagination"),
+	)
+
+	log.Info("Retrieving user operations with pagination")
+
+	operations, err := os.operationStorage.GetUserOperationsFastPagination(ctx, pageSize, cursor, appUser)
+	if err != nil {
+		return nil, fmt.Errorf("SERVICE LAYER: orchestrator_service.GetUserOperationsWithPagination: %w", err)
 	}
 
 	return operations, nil

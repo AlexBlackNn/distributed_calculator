@@ -30,6 +30,12 @@ type OperationStorageInterface interface {
 		pageSize int,
 		cursor string,
 	) ([]models.Operation, error)
+	GetUserOperationsFastPagination(
+		ctx context.Context,
+		pageSize int,
+		cursor string,
+		appUser models.User,
+	) ([]models.Operation, error)
 }
 
 type OperationType int
