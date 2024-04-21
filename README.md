@@ -13,7 +13,7 @@ bash run.demo.sh
 https://github.com/AlexBlackNn/sso
 
 Диаграмма последовательности действий для запуска вычислений 
-![SequenceDiagram_get_result.png](docs%2FSequenceDiagram_get_result.png)
+![SequenceDiagram_post_expression.png](docs%2FSequenceDiagram_post_expression.png)
 
 Диаграмма последовательности действий для получения результата 
 ![SequenceDiagram_get_result.png](docs%2FSequenceDiagram_get_result.png)
