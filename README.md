@@ -12,3 +12,8 @@ bash run.demo.sh
 Взаимодействие описано в сервисе авторизации
 https://github.com/AlexBlackNn/sso
 
+Диаграмма последовательности действий для запуска вычислений 
+![SequenceDiagram_get_result.png](docs%2FSequenceDiagram_get_result.png)
+
+Диаграмма последовательности действий для получения результата 
+![SequenceDiagram_get_result.png](docs%2FSequenceDiagram_get_result.png)
