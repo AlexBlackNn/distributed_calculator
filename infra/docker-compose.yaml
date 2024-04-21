@@ -1,14 +1,23 @@
 version: "3.3"
 services:
+
+  #  orchestrator:
+  #    build:
+  #      context: ../orchestrator
+  #    restart: unless-stopped
+  #    ports:
+  #      - "8080:8080"
+  #    depends_on:
+  #      - rabbit_mq
+  #      - db
   db:
     image: postgres:16.1
     volumes:
       - ./postgres_compose/:/var/lib/postgresql/data/
     ports:
-      - 5432:5432
+      - "5432:5432"
     env_file:
       - .env
-
 
   rabbit_mq:
     image: rabbitmq:3.12-management

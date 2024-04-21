@@ -37,7 +37,6 @@ type Response struct {
 func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var err error
-
 		tokenString := r.Header.Get("Authorization")
 		token := strings.TrimPrefix(tokenString, "Bearer")
 		if !utils.JWTCheck(token) {
@@ -46,7 +45,6 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			render.JSON(w, r, response.Error("bad jwt token"))
 			return
 		}
-
 		uid, name, err := utils.JWTParse(token)
 		if err != nil {
 			log.Error("jwt parsing failed")
@@ -60,9 +58,7 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 			slog.String("op", "handlers.calculation.expression.New"),
 			slog.String("request_id", middleware.GetReqID(r.Context())),
 		)
-
 		var req Request
-
 		err = render.DecodeJSON(r.Body, &req)
 		if errors.Is(err, io.EOF) {
 			// Такую ошибку встретим, если получили запрос с пустым телом.
@@ -81,7 +77,6 @@ func New(log *slog.Logger, application *app.App) http.HandlerFunc {
 		}
 
 		log.Info("request body decoded", slog.Any("request", req))
-
 		if err := validator.New().Struct(req); err != nil {
 			validateErr := err.(validator.ValidationErrors)
 			render.Status(r, http.StatusBadRequest)

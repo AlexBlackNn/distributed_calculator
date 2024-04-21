@@ -76,7 +76,7 @@ func main() {
 		r.Get("/user", user_operations.GetUserOperationsWithPaginationHandler(log, application))
 		r.Get("/", operations.GetOperationsWithPaginationHandler(log, application))
 	})
-
+	time.Sleep(10 * time.Second)
 	// graceful stop
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, syscall.SIGTERM, syscall.SIGINT)

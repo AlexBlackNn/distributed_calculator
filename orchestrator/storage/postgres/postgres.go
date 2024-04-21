@@ -36,16 +36,32 @@ func (s *Storage) SaveOperation(
 	appUser models.User,
 	value any,
 ) error {
-
-	foundUser, err := s.GetUser(ctx, appUser.Id)
+	var user models.User
+	user, err := s.GetUser(ctx, appUser.Id)
 	// TODO: error handling for save user
 	if errors.Is(err, storage.ErrUserNotFound) {
-		s.SaveUser(ctx, appUser)
+		err = s.SaveUser(ctx, appUser)
+		if err != nil {
+			fmt.Println("111111", err)
+		}
+	}
+	query := "SELECT uid, user_name FROM app_users WHERE uid = $1 "
+	rows, err := s.db.QueryContext(ctx, query, appUser.Id)
+	if err != nil {
+		return fmt.Errorf("DATA LAYER: storage.postgres.GetOperations: failed to fetch User: %w", err)
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		err = rows.Scan(&user.Id, &user.Name)
+		if err != nil {
+			fmt.Errorf("Error scanning row: %w", err)
+		}
 	}
 
-	query := "INSERT INTO operations(uid, operation, result, status, created_at, user_id) VALUES($1, $2, $3, $4, $5, $6)"
+	query = "INSERT INTO operations(uid, operation, result, status, created_at, user_id) VALUES($1, $2, $3, $4, $5, $6)"
 	_, err = s.db.ExecContext(
-		ctx, query, operation.Id, operation.Operation, value, "process", time.Now(), foundUser.Id,
+		ctx, query, operation.Id, operation.Operation, value, "process", time.Now(), user.Id,
 	)
 	if err != nil {
 		return fmt.Errorf(
@@ -70,7 +86,7 @@ func (s *Storage) SaveUser(ctx context.Context, user models.User) error {
 
 func (s *Storage) GetUser(
 	ctx context.Context,
-	userId string,
+	userId int,
 ) (models.User, error) {
 
 	query := "SELECT uid, user_name FROM app_users WHERE (uid = $1);"

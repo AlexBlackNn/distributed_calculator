@@ -49,11 +49,9 @@ func (os *OrchestratorService) CalculationRequest(
 	)
 	log.Info("check if operation was calculated")
 	operationInDb, err := os.operationStorage.GetOperation(ctx, operation)
-
 	if err != nil {
 		if errors.Is(err, storage.ErrOperationNotFound) {
 			log.Info("no operation in storage")
-
 			log.Info("getting operation execution time from storage")
 			var execTime models.Settings
 			execTime, err = os.settingsStorage.GetOperationExecutionTime(ctx)

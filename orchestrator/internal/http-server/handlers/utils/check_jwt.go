@@ -16,10 +16,9 @@ import (
 	"time"
 )
 
-// token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6Imx1bmFyYXRoQHJpcHBpbi5uZXQiLCJleHAiOjE3MTM0Njg2MjYsInRva2VuX3R5cGUiOiJhY2Nlc3MiLCJ1aWQiOjI0fQ.4Z07pCvO6ohZLm6NCJhSoofW453YUHzcSeDwTdQTkb4"
-
 func grpcAddress() string {
-	return net.JoinHostPort("localhost", "44044")
+	//TODO: sso migt be localhost in local run. Move to cfg
+	return net.JoinHostPort("sso", "44044")
 }
 
 func JWTCheck(token string) bool {
@@ -62,7 +61,7 @@ func JWTCheck(token string) bool {
 	return respIsValid.GetSuccess()
 }
 
-func JWTParse(tokenString string) (string, string, error) {
+func JWTParse(tokenString string) (int, string, error) {
 
 	token, _, err := new(jwt.Parser).ParseUnverified(tokenString, jwt.MapClaims{})
 	if err != nil {
@@ -79,13 +78,12 @@ func JWTParse(tokenString string) (string, string, error) {
 
 	userName, ok := claims["email"].(string)
 	if !ok {
-		return "", "", ErrNoJWT
+		return 0, "", ErrNoJWT
 	}
-	//userId, ok := claims["uid"].(string)
-	//if !ok {
-	//	return "", "", ErrNoJWT
-	//}
-	// TODO: comply with sso, sso returns jwt with user id integer but uuid needed!
-	userId := "550e8400-e29b-41d4-a716-446655440000"
-	return userId, userName, nil
+	userId, ok := claims["uid"].(float64)
+	if !ok {
+		return 0, "", ErrNoJWT
+	}
+
+	return int(userId), userName, nil
 }
